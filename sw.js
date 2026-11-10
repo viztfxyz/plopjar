@@ -1,5 +1,5 @@
 // Network-first so updates show up immediately; falls back to cache when offline.
-const CACHE = 'plopjar-v16';
+const CACHE = 'plopjar-v17';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png', './fonts/bagel-fat-one-latin.woff2', './fonts/figtree-latin.woff2'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

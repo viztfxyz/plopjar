@@ -563,7 +563,9 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const cv = $('#c'), wrap = $('#wrap');
 let ctx = cv.getContext('2d');
 const W = 480, LY = 180, T = 224, DANGER = T + 4;
-let H = 860, B = 772;
+let H = 860, B = 772, fitH = 860;
+// while a game is on, the jar height is pinned to its floor so resizes only rescale it (the menu demo follows the screen)
+let lockJar = false;
 const FONT = 'Figtree,ui-rounded,system-ui,sans-serif', FD = '"Bagel Fat One",ui-rounded,system-ui,sans-serif';
 const CREAM = '#FFF1DC', MUTE = '#B8A8D8', YOLK = '#FFC83D', SKY = '#63C7FF', GRAPE = '#A98BFF', CHERRY = '#FF5D73', MINT = '#5FE3C0', WELL = '#33264F';
 const CANDY = [YOLK, SKY, GRAPE, CHERRY, MINT];
@@ -581,7 +583,8 @@ function resize() {
   if (IOS && sat < 20 && innerHeight > innerWidth && innerHeight >= screen.height - 2)
     sat = screen.height >= 852 ? 59 : screen.height >= 812 ? 47 : 20;
   const availH = Math.max(300, innerHeight - sat - sab);
-  H = Math.round(Math.min(1040, Math.max(780, W * availH / innerWidth)));
+  fitH = Math.round(Math.min(1040, Math.max(780, W * availH / innerWidth)));
+  if (lockJar) H = B + 88; else { H = fitH; B = H - 88; }
   scale = Math.min(innerWidth / W, availH / H);
   wrap.style.marginTop = sat + 'px';
   wrap.style.setProperty('--s', scale);
@@ -819,7 +822,7 @@ function pick() {
 }
 function drawPick() { const t = nextUp; nextUp = pick(); return t; }
 function newGame(id, sd, evs, floor) {
-  modeId = id; M = id === 'level' ? levelMode(curLevel) : MODES[id]; demo = false; B = floor ?? (H - 88);
+  modeId = id; M = id === 'level' ? levelMode(curLevel) : MODES[id]; demo = false; lockJar = true; B = floor ?? (fitH - 88); resize();
   if (M.daily && sd == null) sd = dateSeed();
   if (M.level && sd == null) sd = 7919 * (curLevel + 1);
   seed = sd ?? ((Math.random() * 2 ** 31) | 0); rs = seed;
@@ -1730,7 +1733,7 @@ function squishLogo() {
   $$('#logo span').forEach((sp, i) => { sp.classList.remove('sq'); void sp.offsetWidth; setTimeout(() => sp.classList.add('sq'), i * 55); });
 }
 $('#logo').onclick = () => { squishLogo(); sound(4, 'merge'); };
-function startDemo() { newGame('classic', (Math.random() * 1e6) | 0); demo = true; }
+function startDemo() { newGame('classic', (Math.random() * 1e6) | 0); demo = true; lockJar = false; resize(); }
 function startLevel(n) {
   curLevel = n; store.set('save', null); newGame('level'); startPlay();
   banner = { txt: goalText(LEVELS[n]), life: 130 };
