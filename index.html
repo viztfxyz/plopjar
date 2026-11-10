@@ -1,0 +1,2099 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#170F26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plopjar">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Plopjar – Fling Squishy Blobs, Merge Numbers | Free Browser Game</title>
+<meta name="description" content="Plopjar is a free merge puzzle game you play in your browser. Fling squishy blobs into the jar, merge matching numbers, beat daily jars and play offline. No ads, no tracking.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="color-scheme" content="dark">
+<!-- absolute URLs: run ./set-domain.sh https://your.domain before deploying -->
+<link rel="canonical" href="https://SITE_URL/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Plopjar">
+<meta property="og:title" content="Plopjar – Fling squishy blobs, merge matching numbers">
+<meta property="og:description" content="A free, offline-ready merge puzzle game in your browser. No ads, no tracking.">
+<meta property="og:url" content="https://SITE_URL/">
+<meta property="og:image" content="https://SITE_URL/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Colorful numbered blobs merging inside a glass jar">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":["VideoGame","WebApplication"],
+"name":"Plopjar","url":"https://SITE_URL/","image":"https://SITE_URL/og-image.png",
+"description":"Fling squishy blobs, merge matching numbers. A free, offline-ready merge puzzle with several modes, a daily jar, 24 puzzle levels, missions, achievements and themes.",
+"applicationCategory":"GameApplication","genre":["Puzzle","Casual"],"gamePlatform":"Web browser",
+"operatingSystem":"Any","browserRequirements":"Requires JavaScript and HTML5 canvas",
+"playMode":"SinglePlayer","inLanguage":"en","isAccessibleForFree":true,
+"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preload" href="fonts/bagel-fat-one-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/figtree-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* fonts are self-hosted so no visitor data goes to a third party (both SIL Open Font License) */
+@font-face{font-family:"Bagel Fat One";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/bagel-fat-one-latin.woff2) format("woff2")}
+@font-face{font-family:Figtree;font-style:normal;font-weight:300 900;font-display:swap;src:url(fonts/figtree-latin.woff2) format("woff2")}
+:root{
+  --bg:#170F26; --sheet:#251A3D; --well:#33264F; --ink:#12081F; --cream:#FFF1DC; --mute:#B8A8D8;
+  --yolk:#FFC83D; --sky:#63C7FF; --grape:#A98BFF; --cherry:#FF5D73; --mint:#5FE3C0;
+  --d:"Bagel Fat One",ui-rounded,system-ui,sans-serif; --b:Figtree,ui-rounded,system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+.screen,.sheet .card{zoom:var(--z,1)}
+html,body{margin:0;height:100%;overscroll-behavior:none;background:var(--bg);color:var(--cream);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;
+  font:500 16px/1.4 var(--b);transition:background .4s}
+#wrap{position:relative;margin:0 auto;overflow:hidden}
+canvas{display:block;width:100%;height:100%;cursor:crosshair}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;appearance:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--cream);outline-offset:3px}
+svg.i{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- squishy buttons: same ink-outline language as the blobs ---------- */
+.gum{--c:var(--yolk);display:block;border:3px solid var(--ink);background:var(--c);color:var(--ink);border-radius:22px;padding:13px 18px;
+  font:400 20px/1.05 var(--d);box-shadow:0 5px 0 var(--ink);transition:transform .1s cubic-bezier(.3,1.7,.5,1),box-shadow .1s;text-align:center}
+.gum:active{transform:translateY(4px) scale(1.03,.95);box-shadow:0 1px 0 var(--ink)}
+.gum small{display:block;font:700 13px/1.2 var(--b);opacity:.72;margin-top:5px}
+.gum.big{width:100%;font-size:34px;padding:18px;border-radius:28px;box-shadow:0 7px 0 var(--ink)}
+.gum.big:active{transform:translateY(6px) scale(1.03,.94);box-shadow:0 1px 0 var(--ink)}
+.gum.soft{--c:var(--well);color:var(--cream)}
+.ib{width:54px;height:54px;flex:none;display:grid;place-items:center;padding:0;border:3px solid var(--ink);border-radius:18px;background:var(--well);color:var(--cream);
+  box-shadow:0 4px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.ib:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.ib[aria-pressed=false]{color:var(--mute)}
+.ib[aria-pressed=false] svg{opacity:.5}
+.row{display:flex;gap:12px;align-items:stretch}
+.row>.gum{flex:1;min-width:0}
+
+/* ---------- in-game pause ---------- */
+#pauseBtn{position:absolute;top:calc(var(--s,1)*20px);left:calc(var(--s,1)*18px);width:calc(var(--s,1)*48px);height:auto;aspect-ratio:1;border-radius:16px;display:none;z-index:4}
+
+/* ---------- main menu ---------- */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 24px 22px}
+.screen.on{display:flex}
+#menu{background:linear-gradient(to bottom,color-mix(in srgb,var(--bg) 82%,transparent) 0%,transparent 34%,transparent 46%,color-mix(in srgb,var(--bg) 94%,transparent) 70%)}
+.logo{margin:0;display:flex;justify-content:center;font:400 78px/1 var(--d);letter-spacing:-.01em;cursor:pointer}
+.logo span{display:inline-block;color:var(--c);-webkit-text-stroke:9px var(--ink);paint-order:stroke fill;text-shadow:0 7px 0 var(--ink);transform-origin:50% 92%}
+.logo span.sq{animation:squish .62s cubic-bezier(.3,1.6,.5,1)}
+@keyframes squish{0%{transform:none}22%{transform:scale(1.28,.7)}52%{transform:translateY(-10px) scale(.88,1.16)}100%{transform:none}}
+.tag{margin:14px auto 0;max-width:30ch;text-align:center;color:var(--mute);font-weight:700;font-size:15px}
+.foot{margin-top:auto;display:flex;flex-direction:column;gap:14px}
+.daily{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:3px solid var(--ink);border-radius:24px;background:var(--mint);color:var(--ink);
+  padding:12px 16px 12px 12px;box-shadow:0 5px 0 var(--ink);transition:transform .1s cubic-bezier(.3,1.7,.5,1),box-shadow .1s}
+.daily:active{transform:translateY(4px) scale(1.02,.96);box-shadow:0 1px 0 var(--ink)}
+.cal{width:52px;flex:none;border:3px solid var(--ink);border-radius:14px;background:var(--cream);overflow:hidden;text-align:center;line-height:1}
+.cal small{display:block;background:var(--cherry);color:var(--cream);font:800 11px/1 var(--b);padding:4px 0 3px;border-bottom:3px solid var(--ink)}
+.cal b{display:block;font:400 22px/1 var(--d);padding:5px 0 6px}
+.daily .t{flex:1;min-width:0}
+.daily .t b{display:block;font:400 21px/1.1 var(--d)}
+.daily .t small{display:block;font-weight:700;font-size:13px;opacity:.72;margin-top:3px}
+.daily .stk{font:400 15px/1.1 var(--d);text-align:right;white-space:nowrap}
+.daily .stk:empty{display:none}
+.tools{display:flex;gap:8px}
+.tools .gum{flex:1;min-width:0;padding:12px 8px}
+.tools .ib{width:50px;height:auto;min-height:50px}
+
+/* ---------- bottom sheets ---------- */
+.sheet{position:absolute;inset:0;display:none;flex-direction:column;justify-content:flex-end;background:rgba(10,4,20,.5);z-index:6}
+.sheet.on{display:flex}
+.sheet.clear{background:transparent;pointer-events:none}
+.sheet.clear .card{pointer-events:auto}
+.card{background:var(--sheet);border:3px solid var(--ink);border-bottom:0;border-radius:32px 32px 0 0;padding:12px 22px 22px;
+  max-height:90%;overflow-y:auto;touch-action:pan-y;animation:up .34s cubic-bezier(.2,1.15,.3,1);box-shadow:0 -6px 0 rgba(0,0,0,.18)}
+.card .handle{height:30px;margin:-12px -22px 4px;display:grid;place-items:center;touch-action:none;cursor:grab}
+.card .handle::before{content:"";width:46px;height:6px;border-radius:3px;background:var(--well)}
+#splash{position:absolute;inset:0;z-index:50;display:grid;place-items:center;align-content:center;gap:18px;background:var(--bg);transition:opacity .45s ease}
+#splash.gone{opacity:0;pointer-events:none}
+#splash .dots{display:flex;gap:8px}#splash .dots i{width:12px;height:12px;border-radius:50%;border:3px solid var(--ink);background:var(--yolk);animation:hop .9s ease-in-out infinite}
+#splash .dots i:nth-child(2){background:var(--sky);animation-delay:.15s}#splash .dots i:nth-child(3){background:var(--cherry);animation-delay:.3s}
+@keyframes hop{0%,100%{transform:translateY(0) scale(1,1)}40%{transform:translateY(-10px) scale(.9,1.1)}60%{transform:translateY(0) scale(1.2,.8)}}
+.lvhead{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
+.lvhead img{width:84px;height:84px;flex:none}
+.lvhead .goal{font:400 26px/1.1 var(--d)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.chip{border:3px solid var(--ink);border-radius:99px;padding:5px 11px;font-weight:800;font-size:13px;background:var(--well)}
+.chip.tw{background:#FF9A5C;color:var(--ink)}
+.parline{display:grid;gap:6px;margin:0 0 16px}
+.parline div{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--mute)}
+.parline .stars{margin:0;gap:2px;justify-content:flex-start}
+.parline .stars i{width:16px;height:16px}
+.parline .stars i.on{background:var(--yolk)}
+.ver{margin:16px 0 0;text-align:center;color:#6E5F92;font-weight:700;font-size:12px}
+@keyframes up{from{transform:translateY(105%)}}
+.card h2{margin:0;font:400 32px/1.05 var(--d)}
+.lede{margin:6px 0 18px;color:var(--mute);font-weight:700;font-size:14px}
+.card .done{margin-top:18px;width:100%}
+
+.modes{display:grid;gap:12px}
+.mode{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:3px solid var(--ink);border-radius:22px;background:var(--c);color:var(--ink);
+  padding:12px 16px 12px 12px;box-shadow:0 5px 0 var(--ink);transition:transform .1s cubic-bezier(.3,1.7,.5,1),box-shadow .1s}
+.mode:active{transform:translateY(4px) scale(1.02,.96);box-shadow:0 1px 0 var(--ink)}
+.mode svg{width:42px;height:42px;flex:none}
+.mode .t{flex:1;min-width:0}
+.mode .t b{display:block;font:400 21px/1.1 var(--d)}
+.mode .t small{display:block;font-weight:700;font-size:13px;line-height:1.3;opacity:.74;margin-top:2px}
+.mode .pb{text-align:right;font:400 18px/1 var(--d);white-space:nowrap}
+.mode .pb small{display:block;font:800 11px/1 var(--b);opacity:.6;margin-top:4px}
+.linkbtn{display:block;margin:18px auto 0;background:none;border:0;color:var(--mute);font-weight:800;font-size:15px;text-decoration:underline;text-underline-offset:4px;padding:6px}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px}
+.tile{background:var(--well);border:3px solid var(--ink);border-radius:18px;padding:12px 10px;text-align:center}
+.tile b{display:block;font:400 24px/1.1 var(--d)}
+.tile small{display:block;color:var(--mute);font-weight:700;font-size:12.5px;margin-top:3px}
+
+.achs{display:grid;gap:10px}
+.ach{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:18px;background:var(--well);border:3px solid var(--ink)}
+.coin{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:50%;border:3px solid var(--ink);background:transparent;color:var(--mute)}
+.ach.got .coin{background:var(--c);color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+.ach .coin svg{width:20px;height:20px}
+.ach b{display:block;font:400 17px/1.15 var(--d)}
+.ach small{display:block;color:var(--mute);font-weight:700;font-size:12.5px;line-height:1.3}
+.ach:not(.got) b{color:var(--mute)}
+
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.th{text-align:left;padding:10px;border-radius:20px;border:3px solid var(--ink);background:var(--well);box-shadow:0 4px 0 var(--ink)}
+.th .jm{display:flex;flex-wrap:wrap;align-content:flex-end;justify-content:center;gap:3px;height:70px;padding:8px;border-radius:12px;border:3px solid var(--ink);background:var(--tb);margin-bottom:8px}
+.th .jm i{width:20px;height:20px;border-radius:50%;border:2px solid var(--ink)}
+.th .jm i:nth-child(2n){width:15px;height:15px}
+.th b{display:block;font:400 17px/1.1 var(--d)}
+.th small{display:block;color:var(--mute);font-weight:700;font-size:12px;margin-top:2px}
+.th.sel{border-color:var(--yolk);box-shadow:0 4px 0 var(--yolk)}
+.th.lock{opacity:.5}
+
+.tog{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 2px;border-bottom:3px solid var(--well);font-weight:800}
+.tog:last-of-type{border-bottom:0}
+.tog input{appearance:none;-webkit-appearance:none;width:56px;height:32px;flex:none;border:3px solid var(--ink);border-radius:20px;background:var(--well);position:relative;cursor:pointer;transition:background .15s;margin:0}
+.tog input::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--mute);border:2px solid var(--ink);box-sizing:border-box;transition:transform .18s cubic-bezier(.3,1.6,.5,1),background .15s}
+.tog input:checked{background:var(--mint)}
+.tog input:checked::after{transform:translateX(24px);background:var(--cream)}
+
+.help h3{margin:18px 0 6px;font:400 20px/1.1 var(--d);color:var(--cream)}
+.help p{margin:0 0 12px;color:var(--mute);font-weight:600;line-height:1.5}
+.help b{color:var(--cream);font-weight:800}
+
+/* game over */
+.ohead{display:flex;align-items:center;gap:12px}
+.ohead .oimg{width:64px;height:64px;flex:none;margin:-6px -4px -6px -8px}
+.ohead>div:not(.sticker){flex:1;min-width:0}
+.ohead .sticker{flex:none}
+.oscore{font:400 64px/1 var(--d);margin:6px 0 2px;color:var(--cream);-webkit-text-stroke:8px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--ink)}
+.sticker{display:none;align-self:center;transform:rotate(-7deg);background:var(--yolk);color:var(--ink);border:3px solid var(--ink);border-radius:14px;padding:7px 12px;
+  font:400 18px/1 var(--d);box-shadow:0 4px 0 var(--ink);animation:stick .5s cubic-bezier(.3,1.8,.5,1) both .35s}
+@keyframes stick{from{transform:rotate(-30deg) scale(0)}}
+.recs{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:6px}
+.recs li{display:flex;align-items:center;gap:12px;padding:7px 12px;border-radius:14px;background:var(--well);font-weight:800}
+.recs li span{width:20px;color:var(--mute)}
+.recs li b{font:400 17px/1 var(--d);flex:1}
+.recs li small{color:var(--mute);font-weight:700}
+.recs li.me{background:var(--yolk);color:var(--ink)}
+.recs li.me span,.recs li.me small{color:var(--ink);opacity:.7}
+.ogo{margin-top:18px}
+.ogo .row{margin-top:14px}
+
+/* toast + replay */
+#toast{position:absolute;left:50%;top:calc(var(--s,1)*300px);transform:translate(-50%,-30px) scale(.8);opacity:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .2s;z-index:9;
+  pointer-events:none;background:var(--yolk);color:var(--ink);border:3px solid var(--ink);border-radius:18px;padding:10px 16px;box-shadow:0 5px 0 var(--ink);width:max-content;max-width:86%}
+#toast.on{transform:translate(-50%,0) rotate(-1.5deg);opacity:1}
+#toast b{display:block;font:400 18px/1.1 var(--d)}
+#toast small{display:block;font-weight:700;font-size:13px;opacity:.75}
+#replayBar{position:absolute;left:50%;bottom:calc(var(--s,1)*16px);transform:translateX(-50%);display:none;gap:8px;align-items:center;z-index:5;
+  background:var(--sheet);border:3px solid var(--ink);border-radius:20px;padding:6px;box-shadow:0 5px 0 var(--ink)}
+#replayBar.on{display:flex}
+#replayBar .lab{font:400 16px var(--d);padding:0 6px 0 8px}
+#replayBar button{border:3px solid var(--ink);background:var(--well);color:var(--cream);border-radius:12px;padding:6px 10px;font:400 15px var(--d)}
+#replayBar button.sel{background:var(--yolk);color:var(--ink)}
+/* menu duo cards, jar trail */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.duo .daily{padding:10px 10px 10px 10px;gap:10px}
+.duo .daily .t b{font-size:18px}
+.duo .daily .t small{font-size:12px}
+.duo .cal{width:46px}
+.daily.trail{background:var(--grape)}
+.cal.lvb small{background:var(--ink)}
+.lvgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.lv{aspect-ratio:1;border:3px solid var(--ink);border-radius:20px;background:var(--c);color:var(--ink);box-shadow:0 4px 0 var(--ink);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;padding:0;transition:transform .1s cubic-bezier(.3,1.7,.5,1),box-shadow .1s}
+.lv:active{transform:translateY(3px) scale(1.03,.95);box-shadow:0 1px 0 var(--ink)}
+.lv b{font:400 26px/1 var(--d)}
+.lv b svg{width:22px;height:22px}
+.lv .ls{display:flex;gap:2px}
+.lv .ls i,.stars i{width:12px;height:12px;background:rgba(18,8,31,.22);clip-path:polygon(50% 0,62% 35%,98% 35%,69% 57%,79% 92%,50% 71%,21% 92%,31% 57%,2% 35%,38% 35%)}
+.lv .ls i.on{background:var(--ink)}
+.lv.lock{background:var(--well);color:var(--mute)}
+.lv.next{outline:3px solid var(--cream);outline-offset:3px}
+.stars{display:flex;justify-content:center;align-items:flex-end;gap:8px;margin:14px 0 6px}
+.star svg{width:64px;height:64px;fill:var(--well);stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round;display:block}
+.star:nth-child(2) svg{width:84px;height:84px}
+.star.on svg{fill:var(--yolk)}
+.star.on{animation:starpop .55s cubic-bezier(.3,1.8,.5,1) both}
+@keyframes starpop{from{transform:scale(0) rotate(-40deg)}}
+/* missions, collection */
+.miss{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:3px solid var(--ink);border-radius:20px;background:var(--well);color:var(--cream);
+  padding:10px 14px;box-shadow:0 4px 0 var(--ink);transition:transform .1s cubic-bezier(.3,1.7,.5,1),box-shadow .1s}
+.miss:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.miss b{font:400 17px/1.1 var(--d);flex:1}
+.miss small{font-weight:800;font-size:13px;color:var(--mute)}
+.pips{display:flex;gap:5px}.pips i{width:16px;height:16px;border-radius:50%;border:3px solid var(--ink);background:var(--sheet)}.pips i.on{background:var(--yolk)}
+.mrow{padding:12px 14px;border-radius:18px;background:var(--well);border:3px solid var(--ink)}
+.mrow .top{display:flex;justify-content:space-between;gap:10px;font-weight:800}
+.mrow .top span{color:var(--mute);white-space:nowrap}
+.bar{height:16px;margin-top:9px;border:3px solid var(--ink);border-radius:10px;background:var(--sheet);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--yolk)}
+.mrow.done .bar i{background:var(--mint)}
+.mrow.done .top span{color:var(--mint)}
+.tabs{display:flex;gap:6px;padding:5px;border:3px solid var(--ink);border-radius:18px;background:var(--well);margin:0 0 16px}
+.tabs button{flex:1;border:0;border-radius:12px;padding:9px;background:transparent;color:var(--mute);font:400 17px var(--d)}
+.tabs button[aria-selected=true]{background:var(--cream);color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+.dex{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.dx{background:var(--well);border:3px solid var(--ink);border-radius:18px;padding:8px 6px 10px;text-align:center}
+.dx img,.dx .sil{width:68px;height:68px;display:block;margin:0 auto 4px}
+.dx .sil{border-radius:50%;border:3px dashed #4A3B6B;display:grid;place-items:center;font:400 24px var(--d);color:#4A3B6B;width:56px;height:56px;margin:6px auto 10px}
+.dx b{display:block;font:400 15px/1.1 var(--d)}
+.dx small{display:block;color:var(--mute);font-weight:700;font-size:11.5px;line-height:1.25;margin-top:3px}
+.dx.no b{color:var(--mute)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<noscript><div style="padding:32px 24px;max-width:36rem;margin:0 auto"><h1>Plopjar</h1><p>Plopjar is a free merge puzzle game for your browser. Fling squishy numbered blobs into a jar, merge matching numbers and don't let the jar overflow. It needs JavaScript to run, so please turn it on to play.</p></div></noscript>
+<div id="safe" aria-hidden="true" style="position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:max(env(safe-area-inset-top),var(--fake-top,0px));padding-bottom:max(env(safe-area-inset-bottom),var(--fake-bottom,0px))"></div>
+<div id="wrap">
+  <div id="splash" aria-hidden="true"><div class="logo" id="splashLogo"><span style="--c:#FF8FA8">p</span><span style="--c:#FFC83D">l</span><span style="--c:#7BE38A">o</span><span style="--c:#63C7FF">p</span><span style="--c:#A98BFF">j</span><span style="--c:#FF9A5C">a</span><span style="--c:#FF5D73">r</span></div><div class="dots"><i></i><i></i><i></i></div></div>
+  <canvas id="c" aria-label="Plopjar game"></canvas>
+  <button class="ib" id="pauseBtn" aria-label="Pause"><svg class="i" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></svg></button>
+
+  <section class="screen" id="menu">
+    <h1 class="logo" id="logo" aria-label="Plopjar"><span style="--c:#FF8FA8">p</span><span style="--c:#FFC83D">l</span><span style="--c:#7BE38A">o</span><span style="--c:#63C7FF">p</span><span style="--c:#A98BFF">j</span><span style="--c:#FF9A5C">a</span><span style="--c:#FF5D73">r</span></h1>
+    <p class="tag">Fling soft blobs. Match the numbers. Don’t overfill the jar.</p>
+    <div class="foot">
+      <button class="miss" data-go="missions"><b>Today’s missions</b><span class="pips" id="mPips"></span><small id="mCount"></small></button>
+      <div class="duo">
+        <button class="daily" id="dailyBtn">
+          <span class="cal"><small id="calM"></small><b id="calD"></b></span>
+          <span class="t"><b>Daily jar</b><small id="dailySub"></small></span>
+        </button>
+        <button class="daily trail" id="trailBtn">
+          <span class="cal lvb"><small>Level</small><b id="trailN">1</b></span>
+          <span class="t"><b>Jar trail</b><small id="trailSub"></small></span>
+        </button>
+      </div>
+      <button class="gum big" id="playBtn">Play</button>
+      <div class="tools">
+        <button class="gum soft" data-go="modes">Modes</button>
+        <button class="ib" data-go="ach" aria-label="Collection and achievements"><svg class="i" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5.5a2.5 2.5 0 0 0 2.6 4M16 6h2.5a2.5 2.5 0 0 1-2.6 4M12 13v4M8.5 20h7M10 17h4"/></svg></button>
+        <button class="ib" data-go="themes" aria-label="Themes"><svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-.9 2-1.9 0-1.2-1-1.6-1-2.6 0-1 .8-1.5 1.8-1.5H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11.5" r=".8"/><circle cx="10.5" cy="7.5" r=".8"/><circle cx="15" cy="7.8" r=".8"/></svg></button>
+        <button class="ib" data-go="stats" aria-label="Stats"><svg class="i" viewBox="0 0 24 24"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg></button>
+        <button class="ib" data-go="settings" aria-label="Settings"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.3"/><circle cx="9.5" cy="17" r="2.3"/></svg></button>
+      </div>
+      <button class="linkbtn" id="newBtn" hidden style="margin-top:0">Start a new game instead</button>
+    </div>
+  </section>
+
+  <section class="sheet" id="modes"><div class="card">
+    <h2>Modes</h2><p class="lede">Each mode keeps its own best score.</p>
+    <div class="modes" id="modeList"></div>
+    <button class="linkbtn" data-go="help">How to play</button>
+  </div></section>
+
+  <section class="sheet" id="pause"><div class="card">
+    <h2>Paused</h2><p class="lede" id="pInfo"></p>
+    <button class="gum big" id="pResume">Resume</button>
+    <div class="row" style="margin-top:14px">
+      <button class="gum soft" id="pRestart">Restart</button>
+      <button class="gum soft" id="pQuit">Save and quit</button>
+    </div>
+    <div class="row" style="margin-top:14px;justify-content:center">
+      <button class="ib" id="pSound" aria-label="Sound effects" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4zM16.5 9a4 4 0 0 1 0 6"/></svg></button>
+      <button class="ib" id="pMusic" aria-label="Music" aria-pressed="true"><svg class="i" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></button>
+    </div>
+  </div></section>
+
+  <section class="sheet" id="levels"><div class="card">
+    <h2>Jar trail</h2><p class="lede" id="lvLede"></p>
+    <div class="lvgrid" id="lvGrid"></div>
+    <button class="gum soft done" data-go="menu">Done</button>
+  </div></section>
+
+  <section class="sheet" id="lvinfo"><div class="card">
+    <h2 id="liTitle"></h2>
+    <div class="lvhead"><img id="liImg" alt=""><div><div class="goal" id="liGoal"></div><p class="lede" id="liThrows" style="margin:4px 0 0"></p></div></div>
+    <div class="chips" id="liChips"></div>
+    <div class="parline" id="liPar"></div>
+    <button class="gum big" id="liPlay">Play</button>
+    <button class="linkbtn" data-go="levels">Back to all levels</button>
+  </div></section>
+
+  <section class="sheet clear" id="lvl"><div class="card">
+    <h2 id="lTitle"></h2><p class="lede" id="lSub" style="margin-bottom:0"></p>
+    <div class="stars" id="lStars"></div>
+    <div class="tiles" id="lStats"></div>
+    <div class="ogo">
+      <button class="gum big" id="lNext">Next level</button>
+      <div class="row"><button class="gum soft" id="lRetry">Try again</button><button class="gum soft" id="lReplay">Replay</button><button class="gum soft" id="lMap">All levels</button></div>
+    </div>
+  </div></section>
+
+  <section class="sheet clear" id="over"><div class="card">
+    <div class="ohead"><img class="oimg" id="oImg" alt=""><div><h2 id="oTitle">Jar’s full</h2><p class="lede" id="oSub" style="margin:4px 0 0"></p></div><div class="sticker" id="oBest">New best</div></div>
+    <div class="oscore" id="oScore">0</div>
+    <div class="tiles" id="oStats" style="margin-top:12px"></div>
+    <ol class="recs" id="oRecs"></ol>
+    <div class="ogo">
+      <button class="gum big" id="oAgain">Play again</button>
+      <div class="row"><button class="gum soft" id="oReplay">Replay</button><button class="gum soft" id="oShare">Share</button><button class="gum soft" id="oMenu">Menu</button></div>
+    </div>
+  </div></section>
+
+  <section class="sheet" id="ach"><div class="card">
+    <h2>Collection</h2><p class="lede" id="achLede"></p>
+    <div class="tabs" role="tablist"><button role="tab" id="tabDex" aria-selected="true">Blobs</button><button role="tab" id="tabAch" aria-selected="false">Achievements</button></div>
+    <div class="dex" id="dexList"></div>
+    <div class="achs" id="achList" hidden></div>
+    <button class="gum soft done" data-go="menu">Done</button>
+  </div></section>
+
+  <section class="sheet" id="missions"><div class="card">
+    <h2>Today’s missions</h2><p class="lede">New missions every day. Each one you finish earns a star toward themes.</p>
+    <div class="achs" id="missionList"></div>
+    <button class="gum soft done" data-go="menu">Done</button>
+  </div></section>
+
+  <section class="sheet" id="themes"><div class="card">
+    <h2>Themes</h2><p class="lede" id="themeLede">Stars from achievements and missions unlock more.</p>
+    <div class="themes" id="themeList"></div>
+    <button class="gum soft done" data-go="menu">Done</button>
+  </div></section>
+
+  <section class="sheet" id="stats"><div class="card">
+    <h2>Your stats</h2><p class="lede">Everything you’ve done on this device.</p>
+    <div class="tiles" id="statGrid"></div>
+    <button class="gum soft done" data-go="menu">Done</button>
+  </div></section>
+
+  <section class="sheet" id="settings"><div class="card">
+    <h2>Settings</h2><p class="lede">Saved on this device.</p>
+    <label class="tog">Sound effects <input type="checkbox" id="sSound"></label>
+    <label class="tog">Music <input type="checkbox" id="sMusic"></label>
+    <label class="tog">Vibration <input type="checkbox" id="sHaptic"></label>
+    <label class="tog">Screen shake <input type="checkbox" id="sShake"></label>
+    <label class="tog">Aim guide <input type="checkbox" id="sAim"></label>
+    <label class="tog">Reduce motion <input type="checkbox" id="sCalm"></label>
+    <div class="row" style="margin-top:18px"><button class="gum soft" id="sReset">Reset progress</button><button class="gum" data-go="menu">Done</button></div>
+    <button class="linkbtn" data-go="about">About Plopjar</button>
+    <p class="ver">Plopjar 1.6. Works offline once installed.</p>
+  </div></section>
+
+  <section class="sheet" id="help"><div class="card help">
+    <h2>How to play</h2><p class="lede">Takes a minute to learn.</p>
+    <p><b>Grab any blob from the shelf</b> and slide it along the top of the jar. Let go and it floats down gently.</p>
+    <p><b>Pull down into the jar to throw.</b> The further you pull, the harder it goes. Drop it back on the shelf to change your mind.</p>
+    <p><b>Swap shelf blobs</b> by dragging one onto another. You get one swap after every throw. The small blob at the end of the shelf is coming next.</p>
+    <p><b>Matching numbers merge</b> and double. Quick merges in a row build a combo. Matching neighbours on the shelf fuse on their own.</p>
+    <p><b>Don’t overfill.</b> If blobs stay above the dashed line for 3 seconds, the game ends.</p>
+    <p><b>Power-ups.</b> Merges charge the three dots at the bottom. Shake loosens a jammed jar. Pop removes one blob you tap.</p>
+    <p><b>Rainbow blobs</b> merge with the first blob they touch.</p>
+    <p><b>Jar trail</b> has 24 puzzle jars. Each has a goal and a limited number of throws. Finish in fewer throws for more stars.</p>
+    <p><b>Chaos mode</b> changes a rule every 25 seconds: low gravity, wind, bouncy walls and more.</p>
+    <p><b>Collect every blob.</b> Each number is a character. Bigger ones grow eyebrows, a sprout, a crown.</p>
+    <button class="gum soft done" data-go="modes">Back to modes</button>
+  </div></section>
+
+  <section class="sheet" id="about"><div class="card help">
+    <h2>About Plopjar</h2><p class="lede">A free merge puzzle game you play in your browser.</p>
+    <p>Plopjar is a physics merge game. You fling soft, squishy number blobs into a glass jar. When two blobs with the same number touch, they merge into one blob with double the number. Chain merges together for combos, and keep the jar from filling past the line.</p>
+    <h3>Game modes</h3>
+    <p>Play the Classic jar, squeeze into the narrow Slim jar, merge in sets of three in Threes, race to 1024 in Sprint, relax in Zen with no game over, or try Chaos, where a rule changes every 25 seconds: low gravity, wind, bouncy walls and more. Every mode keeps its own best score.</p>
+    <h3>Daily jar and missions</h3>
+    <p>A new daily jar every day, the same for every player, plus daily missions that earn stars. Stars unlock new themes for the jar.</p>
+    <h3>Jar trail puzzles</h3>
+    <p>24 puzzle jars, each with a goal and a limited number of throws. Finish in fewer throws to earn up to three stars.</p>
+    <h3>Collect every blob</h3>
+    <p>Each number is its own character. Bigger blobs grow eyebrows, a sprout, then a crown. Fill your collection and unlock achievements.</p>
+    <h3>Offline and private</h3>
+    <p>Plopjar works offline once installed and runs on phones, tablets and computers. There are no ads, no accounts and no tracking. Your progress is saved only on your device.</p>
+    <button class="gum soft done" data-go="settings">Back to settings</button>
+  </div></section>
+
+  <div id="replayBar"><span class="lab">Replay</span>
+    <button data-sp="1">1×</button><button class="sel" data-sp="2">2×</button><button data-sp="4">4×</button><button data-sp="8">8×</button>
+    <button id="rExit" aria-label="Close replay">Close</button></div>
+  <div id="toast" role="status"><b id="tName"></b><small id="tDesc"></small></div>
+</div>
+
+<script>
+"use strict";
+// ======================================================================
+//  PLOPJAR — squishy soft-body merge game
+// ======================================================================
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const cv = $('#c'), wrap = $('#wrap');
+let ctx = cv.getContext('2d');
+const W = 480, LY = 180, T = 224, DANGER = T + 4;
+let H = 860, B = 772;
+const FONT = 'Figtree,ui-rounded,system-ui,sans-serif', FD = '"Bagel Fat One",ui-rounded,system-ui,sans-serif';
+const CREAM = '#FFF1DC', MUTE = '#B8A8D8', YOLK = '#FFC83D', SKY = '#63C7FF', GRAPE = '#A98BFF', CHERRY = '#FF5D73', MINT = '#5FE3C0', WELL = '#33264F';
+const CANDY = [YOLK, SKY, GRAPE, CHERRY, MINT];
+let scale = 1, dpr = 1;
+function resize() {
+  dpr = Math.min(2.5, window.devicePixelRatio || 1);
+  // keep everything clear of the notch / Dynamic Island / home bar on full-screen phones
+  const sa = getComputedStyle(document.getElementById('safe')), sat = parseFloat(sa.paddingTop) || 0, sab = parseFloat(sa.paddingBottom) || 0;
+  const availH = Math.max(300, innerHeight - sat - sab);
+  H = Math.round(Math.min(1040, Math.max(780, W * availH / innerWidth)));
+  scale = Math.min(innerWidth / W, availH / H);
+  wrap.style.marginTop = sat + 'px';
+  wrap.style.setProperty('--s', scale);
+  // short screens (landscape / desktop): shrink the HTML menus with the jar so they don't spill over it
+  wrap.style.setProperty('--z', Math.min(1, H * scale / 760).toFixed(3));
+  wrap.style.width = W * scale + 'px'; wrap.style.height = H * scale + 'px';
+  cv.width = Math.round(W * scale * dpr); cv.height = Math.round(H * scale * dpr);
+}
+addEventListener('resize', resize); resize();
+
+// ---------- persistence ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('pj_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('pj_' + k, JSON.stringify(v)); } catch (e) {} },
+};
+const settings = Object.assign({ theme: 'midnight', sound: true, haptic: true, shake: true, aim: true, music: true, calm: matchMedia('(prefers-reduced-motion: reduce)').matches }, store.get('settings', {}));
+const moving = () => settings.shake && !settings.calm;
+let unlocked = new Set(store.get('ach', []));
+let seen = new Set(store.get('seen', []));
+let records = store.get('records', {});      // mode -> [{s, d, v}]
+let life = Object.assign({ merges: 0, games: 0, plops: 0, bestCombo: 0, biggest: 0, time: 0, powers: 0, rainbows: 0, missions: 0 }, store.get('life', {}));
+
+// ---------- modes ----------
+const MODES = {
+  daily:   { name: 'Daily Challenge', icon: '📅', desc: '', L: 24, R: 456, base: 2, g: 1.235, pool: 4, over: true, daily: true },
+  classic: { name: 'Classic', desc: 'The full jar. Go as big as you can.', L: 24, R: 456, base: 2, g: 1.235, pool: 4, over: true, icon: '🫙' },
+  slim:    { name: 'Slim', desc: 'Narrow jar, tiny spawns. Brutal.', L: 104, R: 376, base: 2, g: 1.2, pool: 3, over: true, icon: '🪡' },
+  threes:  { name: 'Threes', desc: 'Powers of 3 — three must touch to merge.', L: 24, R: 456, base: 3, g: 1.36, pool: 2, over: true, icon: '🔺' },
+  sprint:  { name: 'Sprint', desc: 'Race to a 1024 blob. Clock is ticking.', L: 24, R: 456, base: 2, g: 1.235, pool: 4, over: true, target: 10, icon: '⏱️' },
+  level:   { name: 'Jar trail', desc: '', L: 24, R: 456, base: 2, g: 1.235, pool: 4, over: true },
+  chaos:   { name: 'Chaos', desc: '', L: 24, R: 456, base: 2, g: 1.235, pool: 4, over: true, chaos: true },
+  zen:     { name: 'Zen', desc: 'No game over. Overflow just pops away.', L: 24, R: 456, base: 2, g: 1.235, pool: 4, over: false, icon: '🧘' },
+};
+const MODE_UI = {
+  daily: [MINT, 'Same jar for everyone today.'], classic: [YOLK, 'The standard jar. See how big you can grow.'],
+  slim: [SKY, 'A narrow jar with small blobs. Hard.'], threes: [GRAPE, 'Powers of three. Three must touch to merge.'],
+  sprint: [CHERRY, 'Make a 1024 blob as fast as you can.'], zen: [MINT, 'No game over. Overflow pops away.'],
+  chaos: ['#FF9A5C', 'A rule changes every 25 seconds.'], level: [GRAPE, 'Puzzle jars with goals.'],
+};
+for (const [id, [c, d]] of Object.entries(MODE_UI)) { MODES[id].col = c; MODES[id].desc = d; }
+MODES.daily.name = 'Daily jar';
+let modeId = 'classic', M = MODES.classic;
+const BLOB_NAMES = [['Pip', 'Small, loud, everywhere.'], ['Duo', 'Two Pips who never split up.'], ['Bean', 'Bouncy and a bit nosy.'],
+  ['Gumdrop', 'Sticks to everything.'], ['Mochi', 'Soft outside. Softer inside.'], ['Puddin', 'Wobbles when it laughs.'],
+  ['Jello', 'Just grew its first eyebrows.'], ['Marsh', 'Sprouted a leaf. Very proud.'], ['Big Bun', 'Takes up most of the sofa.'],
+  ['Wobbles', 'Royalty, apparently.'], ['Sir Squish', 'Knighted for sheer size.'], ['Duchess', 'Rarely seen. Always judging.'],
+  ['Moonjelly', 'Some say it glows at night.'], ['The Blob', 'The end of the jar.']];
+// Jar trail: g = goal (make / score / combo / merges), v = target, n = throws, par = [3-star, 2-star] throws used
+const LEVELS = [
+  { g: 'make', v: 16, n: 12, par: [7, 10] }, { g: 'make', v: 32, n: 16, par: [10, 13] }, { g: 'merges', v: 10, n: 14, par: [9, 12] },
+  { g: 'combo', v: 3, n: 15, par: [8, 12] }, { g: 'make', v: 64, n: 22, par: [14, 18], pre: [[3, 140], [3, 340]] }, { g: 'score', v: 1000, n: 20, par: [12, 16] },
+  { g: 'make', v: 64, n: 22, par: [14, 18], mod: 'low' }, { g: 'make', v: 64, n: 24, par: [15, 20], jar: 'slim' }, { g: 'combo', v: 4, n: 20, par: [12, 16], mod: 'bouncy' },
+  { g: 'make', v: 128, n: 30, par: [19, 25], pre: [[4, 110], [2, 240], [4, 370]] }, { g: 'merges', v: 25, n: 26, par: [18, 22], mod: 'windR' }, { g: 'make', v: 128, n: 30, par: [19, 25], mod: 'heavy' },
+  { g: 'score', v: 3000, n: 30, par: [20, 25] }, { g: 'make', v: 128, n: 32, par: [20, 26], jar: 'slim', mod: 'low' }, { g: 'combo', v: 5, n: 26, par: [16, 21] },
+  { g: 'make', v: 256, n: 40, par: [27, 34], pre: [[5, 240]] }, { g: 'make', v: 256, n: 42, par: [28, 35], mod: 'windL' }, { g: 'merges', v: 40, n: 40, par: [30, 35], mod: 'bouncy' },
+  { g: 'make', v: 256, n: 44, par: [30, 38], jar: 'slim' }, { g: 'score', v: 8000, n: 42, par: [30, 36], mod: 'heavy' }, { g: 'combo', v: 6, n: 34, par: [22, 28] },
+  { g: 'make', v: 512, n: 60, par: [42, 52], pre: [[6, 120], [6, 360]] }, { g: 'make', v: 512, n: 60, par: [44, 54], mod: 'windR' }, { g: 'make', v: 1024, n: 80, par: [60, 72], pre: [[7, 240]] },
+];
+const goalText = L => L.g === 'make' ? `Make a ${L.v.toLocaleString()} blob` : L.g === 'score' ? `Score ${L.v.toLocaleString()}` : L.g === 'combo' ? `Hit a ×${L.v} combo` : `Merge ${L.v} times`;
+function levelMode(n) {
+  const L = LEVELS[n], slim = L.jar === 'slim';
+  return { name: `Level ${n + 1}`, L: slim ? 104 : 24, R: slim ? 376 : 456, base: 2, g: slim ? 1.2 : 1.235, pool: slim ? 3 : 4, over: true, level: L, lvl: n };
+}
+const CHAOS = [['low', 'Low gravity'], ['heavy', 'Heavy jelly'], ['windL', 'Wind from the right'], ['windR', 'Wind from the left'], ['bouncy', 'Bouncy walls'], ['double', 'Double points']];
+let mod = null, discover = null, zoom = null, gaze = null;
+const need = () => M.base;
+const val = t => Math.pow(M.base, t);
+const rad = t => 16 * Math.pow(M.g, t < 0 ? 1 : t);
+const fmtD = d => d.toLocaleDateString('en-CA'), today = () => fmtD(new Date());
+const dateSeed = () => { let h = 2166136261; for (const c of 'plopjar-' + today()) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h | 0; };
+const recKey = (id = modeId) => MODES[id].daily ? 'daily-' + today() : id;
+function streak() {
+  const set = new Set(store.get('dailies', [])), d = new Date(); let n = 0;
+  if (!set.has(fmtD(d))) d.setDate(d.getDate() - 1);
+  while (set.has(fmtD(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+const maxT = () => M.base === 3 ? 8 : 13;
+
+// ---------- themes ----------
+const THEMES = [
+  { id: 'midnight', name: 'Night candy', need: 0, bg: '#170F26', jar: '#211736', dot: 'rgba(255,241,220,.035)', rim: '#E9DCFF', acc: '#FFC83D', pal: i => [(i * 29 + 350) % 360, 88, 67] },
+  { id: 'neon',     name: 'Neon',     need: 2, bg: '#06050c', jar: '#0c0a17', dot: 'rgba(160,120,255,.07)', rim: '#a993ff', acc: '#55f0ff', glow: true, pal: i => [(i * 47 + 180) % 360, 100, 62] },
+  { id: 'ember',    name: 'Ember',    need: 4, bg: '#110907', jar: '#1a0f0b', dot: 'rgba(255,120,60,.05)', rim: '#ffb38a', acc: '#ff8a3d', pal: i => [(i * 4.5) % 360, 92, 46 + (i % 2) * 14 + i * 1.2] },
+  { id: 'abyss',    name: 'Abyss',    need: 6, bg: '#050b12', jar: '#0a1520', dot: 'rgba(80,200,255,.05)', rim: '#8fd8ff', acc: '#38e8c8', pal: i => [170 + i * 8, 78, 46 + (i % 3) * 9] },
+  { id: 'sakura',   name: 'Sakura',   need: 8, bg: '#120a10', jar: '#1c1018', dot: 'rgba(255,150,200,.05)', rim: '#ffc2dc', acc: '#ff9ccb', pal: i => [(320 + i * 6) % 360, 80, 74 - (i % 3) * 9] },
+  { id: 'toxic',    name: 'Toxic',    need: 10, bg: '#070c05', jar: '#0e170a', dot: 'rgba(170,255,60,.05)', rim: '#c8ff7a', acc: '#a6ff3d', glow: true, pal: i => [62 + i * 7, 90, 48 + (i % 2) * 12] },
+  { id: 'mono',     name: 'Mono',     need: 12, bg: '#0b0b0b', jar: '#141414', dot: 'rgba(255,255,255,.04)', rim: '#e8e8e8', acc: '#ffffff', pal: i => [250, 6, 38 + i * 4.4] },
+  { id: 'gold',     name: 'Midas',    need: 14, bg: '#0e0b04', jar: '#18130a', dot: 'rgba(255,210,90,.05)', rim: '#ffe08a', acc: '#ffcc33', glow: true, pal: i => [32 + i * 2, 92, 42 + i * 3] },
+];
+let TH = THEMES[0];
+const pal = t => t < 0 ? [(frame * 4) % 360, 95, 66] : TH.pal(t); // t < 0 = rainbow wildcard
+const hsl = (c, dl = 0, a = 1) => `hsla(${c[0]},${c[1]}%,${Math.max(0, Math.min(100, c[2] + dl))}%,${a})`;
+const stars = () => unlocked.size + (life.missions || 0);
+for (let t = 0; (1 << t) <= (life.biggest || 0); t++) seen.add(t);
+function applyTheme() {
+  TH = THEMES.find(t => t.id === settings.theme) || THEMES[0];
+  if (stars() < TH.need) TH = THEMES[0];
+  document.documentElement.style.setProperty('--bg', TH.bg);
+  document.documentElement.style.setProperty('--acc', TH.acc);
+  document.querySelector('meta[name=theme-color]').content = TH.bg;
+}
+applyTheme();
+
+// ---------- achievements ----------
+const ACH = [
+  ['first', '👶', 'First Plop', 'Make your first merge'],
+  ['v64', '🍡', 'Chunky', 'Make a 64 blob'],
+  ['v256', '🍮', 'Hefty', 'Make a 256 blob'],
+  ['v1024', '🫧', 'Colossal', 'Make a 1024 blob'],
+  ['v4096', '🌕', 'Mythic', 'Make a 4096 blob'],
+  ['c3', '💦', 'Triple Splash', 'Hit a x3 combo'],
+  ['c5', '⚡', 'Chain Reaction', 'Hit a x5 combo'],
+  ['c8', '🌪️', 'Avalanche', 'Hit a x8 combo'],
+  ['tray64', '🎒', 'Pocket Monster', 'Fuse a 64 in the tray'],
+  ['bull', '🎯', 'Bullseye', 'Fling a blob hard and merge on its very first touch'],
+  ['clean', '✨', 'Spotless', 'Have a lone blob of 256+ as your whole jar'],
+  ['packed', '🥫', 'Sardines', 'Have 26 blobs in the jar at once'],
+  ['s10k', '🔟', 'Five Digits', 'Score 10,000 in one game'],
+  ['s25k', '👑', 'Big League', 'Score 25,000 in one game'],
+  ['slim512', '🪡', 'Tightrope', 'Make a 512 in Slim'],
+  ['t243', '🔺', 'Trinity', 'Make a 243 in Threes'],
+  ['spr3', '⏱️', 'Speedy', 'Finish Sprint under 4 minutes'],
+  ['spr2', '🚀', 'Lightning', 'Finish Sprint under 2:30'],
+  ['zen', '🧘', 'Inner Squish', 'Make 500 merges total'],
+  ['patient', '🐢', 'Feather Touch', 'Reach 512 in Classic without a single fling'],
+  ['power', '🌀', 'Power Up', 'Use a Shake or a Pop'],
+  ['rainbow', '🌈', 'Wildcard', 'Merge using a rainbow blob'],
+  ['daily', '📅', 'Daily Dose', 'Finish a Daily Challenge'],
+  ['streak3', '🔥', 'On Fire', 'Play the Daily 3 days in a row'],
+  ['collector', '', 'Collector', 'Discover 10 different blobs'],
+  ['chaos', '', 'Chaos Tamer', 'Score 5,000 in Chaos'],
+  ['trail1', '', 'First Jar', 'Clear a Jar trail level'],
+  ['trail3', '', 'Perfectionist', 'Get 3 stars on a level'],
+  ['trailAll', '', 'Trailblazer', 'Clear all 24 Jar trail levels'],
+];
+let replaying = false, demo = false, toastQ = [], toastBusy = false;
+function award(id) {
+  if (replaying || demo || unlocked.has(id)) return;
+  const a = ACH.find(x => x[0] === id); if (!a) return;
+  const before = THEMES.filter(t => t.need <= stars()).length;
+  unlocked.add(id); store.set('ach', [...unlocked]);
+  const after = THEMES.filter(t => t.need <= stars()).length;
+  toastQ.push([a[2], a[3] + (after > before ? '. New theme unlocked.' : '')]);
+  runToast();
+  sound(9, 'ach');
+}
+function flash(n, d = '') { toastQ.push([n, d]); runToast(); }
+function runToast() {
+  if (toastBusy || !toastQ.length) return;
+  toastBusy = true; const [n, d] = toastQ.shift();
+  $('#tName').textContent = n; $('#tDesc').textContent = d; $('#toast').classList.add('on');
+  setTimeout(() => { $('#toast').classList.remove('on'); setTimeout(() => { toastBusy = false; runToast(); }, 400); }, 2600);
+}
+
+// ---------- daily missions ----------
+const MISSION_T = {
+  merges: [g => `Merge ${g} times`, [40, 80, 120], 'add'],
+  value: [g => `Make a ${g.toLocaleString()} blob`, [128, 256, 512], 'max'],
+  combo: [g => `Hit a ×${g} combo`, [4, 6, 8], 'max'],
+  power: [g => `Use ${g} power-ups`, [2, 4], 'add'],
+  fling: [g => `Throw ${g} blobs hard`, [10, 25], 'add'],
+  score: [g => `Score ${g.toLocaleString()} in one game`, [3000, 8000, 15000], 'max'],
+  rainbow: [g => g > 1 ? `Merge ${g} rainbow blobs` : 'Merge a rainbow blob', [1, 2], 'add'],
+  games: [g => `Finish ${g} games`, [2, 3], 'add'],
+};
+let MIS = null;
+function todayMissions() {
+  if (MIS && MIS.date === today()) return MIS;
+  let m = store.get('missions', null);
+  if (!m || m.date !== today()) {
+    let h = dateSeed() ^ 0x5bd1e995;
+    const r = () => { h = (Math.imul(h, 1664525) + 1013904223) | 0; return (h >>> 0) / 4294967296; };
+    const keys = Object.keys(MISSION_T), list = [];
+    while (list.length < 3) {
+      const k = keys[(r() * keys.length) | 0]; if (list.some(x => x.k === k)) continue;
+      const gs = MISSION_T[k][1]; list.push({ k, goal: gs[(r() * gs.length) | 0], prog: 0, done: false });
+    }
+    m = { date: today(), list }; store.set('missions', m);
+  }
+  return MIS = m;
+}
+function mission(k, v) {
+  if (replaying || demo) return;
+  const m = todayMissions(); let changed = false;
+  for (const x of m.list) {
+    if (x.k !== k || x.done) continue;
+    const np = MISSION_T[k][2] === 'add' ? x.prog + v : Math.max(x.prog, v);
+    if (np === x.prog) continue;
+    x.prog = Math.min(np, x.goal); changed = true;
+    if (x.prog >= x.goal) {
+      x.done = true; life.missions = (life.missions || 0) + 1; store.set('life', life);
+      flash('Mission done', MISSION_T[k][0](x.goal) + '. You earned a star.'); sound(9, 'ach');
+    }
+  }
+  if (changed) store.set('missions', m);
+}
+
+// ---------- seeded rng (for replays) ----------
+let rs = 1;
+const rng = () => { rs |= 0; rs = rs + 0x6D2B79F5 | 0; let t = Math.imul(rs ^ rs >>> 15, 1 | rs); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+// ---------- game state ----------
+const GRAV = 0.4, TRAY_N = 4, LAZYV = 0.9, PR = 4.5, S = 4, G = GRAV / (S * S), DAMP = 0.996, MAXV = 7, SHAPE_K = 0.11, EDGE_K = 0.3, PRESS_K = 0.7, MINW = 0.25;
+// how much of a correction the lighter blob takes: heavier blobs win, but never totally crush light ones
+const share = (ma, mb) => Math.max(MINW, Math.min(1 - MINW, mb / (ma + mb)));
+let state = 'menu', blobs = [], parts = [], pops = [], rings = [];
+let thrown = 0, lastThrow = -999, lvBest = 0, lvCombo = 0, swapOK = true, nextUp = 0, trayIds = [], tid = 0, tvInit = true, curLevel = 0;
+let lvlStars = store.get('lvl', {});
+const tv = new Map(), fusedIds = new Set();   // shelf animation state (visual only)
+let chargeFlash = 0, energy = 0, charges = 0, popMode = false, dispScore = 0, scoreBump = 0, bestAtStart = 0, newBestShown = false, banner = null, hint = null;
+let tut = store.get('tut', 0), tutPow = store.get('tutPow', false);
+const POW = { shake: { x: 22, get y() { return H - 70; }, w: 118, h: 52 }, pop: { x: 340, get y() { return H - 70; }, w: 118, h: 52 } };
+let score, combo, lastMerge, gf, maxTier, danger, tray, sel, cool, seed, events, pending, canReplay, flings, merges, finished, shake = 0;
+let lastPY = 999, hoverOK = false, grab = null, lx = W / 2, aim = null, pid = 0, frame = 0, speed = 1, overInfo = null;
+
+function pick() {
+  if (maxTier >= 4 && rng() < 0.035) return -1; // rare rainbow
+  const m = Math.min(M.pool, Math.max(1, maxTier - 2));
+  return Math.floor(Math.pow(rng(), 1.5) * (m + 1));
+}
+function drawPick() { const t = nextUp; nextUp = pick(); return t; }
+function newGame(id, sd, evs, floor) {
+  modeId = id; M = id === 'level' ? levelMode(curLevel) : MODES[id]; demo = false; B = floor ?? (H - 88);
+  if (M.daily && sd == null) sd = dateSeed();
+  if (M.level && sd == null) sd = 7919 * (curLevel + 1);
+  seed = sd ?? ((Math.random() * 2 ** 31) | 0); rs = seed;
+  mod = null; discover = null; zoom = null; energy = 0; charges = 0; popMode = false; dispScore = 0; scoreBump = 0; banner = null; hint = null; newBestShown = false;
+  bestAtStart = (records[recKey(id)] || [])[0]?.s || 0;
+  blobs = []; parts = []; pops = []; rings = [];
+  score = 0; combo = 0; lastMerge = -999; gf = 0; maxTier = 0; danger = 0; cool = 0; flings = 0; merges = 0; finished = false;
+  thrown = 0; lastThrow = -999; lvBest = 0; lvCombo = 0; swapOK = true; tvInit = true; tv.clear(); fusedIds.clear();
+  if (M.level) {
+    for (const [t, x] of M.level.pre || []) { const b = makeBlob(t, x, B - rad(t) - 6, 0, 0, 1); b.age = 200; b.touched = true; maxTier = Math.max(maxTier, t); }
+    if (M.level.mod) mod = { id: M.level.mod, name: CHAOS.find(c => c[0] === M.level.mod)[1], until: Infinity };
+  }
+  nextUp = pick();
+  tray = []; while (tray.length < TRAY_N) tray.push(drawPick()); trayIds = tray.map(() => ++tid); sel = 0; fuseTray();
+  events = evs ? evs.slice() : []; pending = []; canReplay = true;
+  lx = W / 2; aim = null; grab = null;
+}
+function makeBlob(t, x, y, vx, vy, sc) {
+  const r = rad(t), n = Math.max(10, Math.min(120, Math.round(2 * Math.PI * r / 8)));
+  const b = { t, r, n, pts: [], rest: [], sc: sc || 1, ang: 0, cx: x, cy: y, top: y - r, age: 0, dead: false, m: r * r / n,
+              seed: (rng() * 1000) | 0, touched: false, fling: 0, pulse: 0, wild: t < 0 };
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2, ux = Math.cos(a), uy = Math.sin(a);
+    b.rest.push(ux, uy);
+    const px = x + ux * r * b.sc, py = y + uy * r * b.sc;
+    b.pts.push({ x: px, y: py, px: px - vx / S, py: py - vy / S, b, id: pid++ });
+  }
+  blobs.push(b);
+  return b;
+}
+
+// ---------- tray ----------
+function fuseTray() {
+  for (let guard = 0; guard < 30; guard++) {
+    let done = true;
+    for (let i = 0; i + need() <= tray.length; i++) {
+      const t = tray[i]; if (t < 0 || t >= maxT()) continue;
+      let ok = true; for (let k = 1; k < need(); k++) if (tray[i + k] !== t) ok = false;
+      if (!ok) continue;
+      tray.splice(i, need(), t + 1);
+      const nid = ++tid; trayIds.splice(i, need(), nid); fusedIds.add(nid);
+      while (tray.length < TRAY_N) { tray.push(drawPick()); trayIds.push(++tid); }
+      score += val(t + 1);
+      if (sel >= i && sel < i + need()) sel = i;
+      else if (sel >= i + need()) sel -= need() - 1;
+      trayFx(i, t + 1);
+      if (val(t + 1) >= 64 && M.base === 2) award('tray64');
+      done = false; break;
+    }
+    if (done) break;
+  }
+  sel = Math.max(0, Math.min(tray.length - 1, sel));
+}
+const traySlot = i => { const w = 74, g = 12, x0 = (W - (TRAY_N * w + (TRAY_N - 1) * g)) / 2; return { x: x0 + i * (w + g), y: 84, w, h: 62 }; };
+function trayFx(i, t) {
+  if (replaying && speed > 2) return;
+  const s = traySlot(i);
+  for (let k = 0; k < 10; k++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 3;
+    parts.push({ x: s.x + 33, y: s.y + 33, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 26, s: 3 + Math.random() * 3, t }); }
+  sound(t, 'fuse');
+}
+
+// ---------- physics ----------
+const CELL = 10, grid = new Map(), mergePairs = [], wildPairs = [];
+function substep() {
+  const Lw = M.L, Rw = M.R, mid_ = mod ? mod.id : '';
+  const Gm = G * (mid_ === 'low' ? 0.45 : mid_ === 'heavy' ? 1.7 : 1), Wm = mid_ === 'windL' ? -G * 0.35 : mid_ === 'windR' ? G * 0.35 : 0, bounce = mid_ === 'bouncy';
+  for (const b of blobs) { const cap = b.lazy && !b.touched ? LAZYV : MAXV; for (const p of b.pts) {
+    let vx = (p.x - p.px) * DAMP, vy = (p.y - p.py) * DAMP;
+    const v = Math.hypot(vx, vy);
+    if (v > cap) { vx *= cap / v; vy *= cap / v; }
+    p.px = p.x; p.py = p.y; p.x += vx + Wm; p.y += vy + Gm;
+  } }
+  for (const b of blobs) {
+    const P = b.pts, n = b.n;
+    let cx = 0, cy = 0;
+    for (const p of P) { cx += p.x; cy += p.y; }
+    cx /= n; cy /= n;
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) {
+      const qx = P[i].x - cx, qy = P[i].y - cy, ux = b.rest[2 * i], uy = b.rest[2 * i + 1];
+      num += ux * qy - uy * qx; den += ux * qx + uy * qy;
+    }
+    const a = Math.atan2(num, den), c = Math.cos(a), s = Math.sin(a), rr = b.r * b.sc;
+    b.ang = a; b.cx = cx; b.cy = cy;
+    let top = 1e9;
+    for (let i = 0; i < n; i++) {
+      const p = P[i], ux = b.rest[2 * i] * rr, uy = b.rest[2 * i + 1] * rr;
+      p.x += (cx + c * ux - s * uy - p.x) * SHAPE_K;
+      p.y += (cy + s * ux + c * uy - p.y) * SHAPE_K;
+      if (p.y < top) top = p.y;
+    }
+    b.top = top - PR;
+    const L0 = 2 * Math.PI * rr / n;
+    for (let i = 0; i < n; i++) {
+      const p = P[i], q = P[(i + 1) % n], dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1e-6;
+      const k = (d - L0) / d * EDGE_K;
+      p.x += dx * k; p.y += dy * k; q.x -= dx * k; q.y -= dy * k;
+    }
+    // pressure: keep the blob's area, so it squishes but never gets crushed flat
+    let area = 0, per = 0;
+    for (let i = 0; i < n; i++) { const a = P[i], c = P[(i + 1) % n]; area += a.x * c.y - c.x * a.y; per += Math.hypot(c.x - a.x, c.y - a.y); }
+    area *= 0.5;
+    const A0 = 0.5 * n * rr * rr * Math.sin(2 * Math.PI / n), h = (A0 - area) / (per || 1) * PRESS_K;
+    if (h !== 0) {
+      const nx = new Float64Array(n), ny = new Float64Array(n);
+      for (let i = 0; i < n; i++) { const pv = P[(i + n - 1) % n], nv = P[(i + 1) % n], tx = nv.x - pv.x, ty = nv.y - pv.y, l = Math.hypot(tx, ty) || 1; nx[i] = ty / l; ny[i] = -tx / l; }
+      for (let i = 0; i < n; i++) { P[i].x += nx[i] * h; P[i].y += ny[i] * h; }
+    }
+    let br = 0; for (const p of P) { const d = (p.x - cx) * (p.x - cx) + (p.y - cy) * (p.y - cy); if (d > br) br = d; }
+    b.br = Math.sqrt(br);
+  }
+  grid.clear();
+  for (const b of blobs) for (const p of b.pts) {
+    const k = (Math.floor(p.x / CELL) + 100) * 8192 + (Math.floor(p.y / CELL) + 1000);
+    let arr = grid.get(k); if (!arr) grid.set(k, arr = []); arr.push(p);
+  }
+  const D = 2 * PR, D2 = D * D, MT = maxT();
+  for (const b of blobs) for (const p of b.pts) {
+    const gx = Math.floor(p.x / CELL) + 100, gy = Math.floor(p.y / CELL) + 1000;
+    for (let ix = -1; ix <= 1; ix++) for (let iy = -1; iy <= 1; iy++) {
+      const arr = grid.get((gx + ix) * 8192 + gy + iy); if (!arr) continue;
+      for (const q of arr) {
+        if (q.b === b || q.id <= p.id) continue;
+        const dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy;
+        if (d2 >= D2 || d2 < 1e-8) continue;
+        const d = Math.sqrt(d2), o = (D - d) / d, wa = share(b.m, q.b.m), wb = 1 - wa, ws = 1;
+        p.x -= dx * o * wa; p.y -= dy * o * wa;
+        q.x += dx * o * wb; q.y += dy * o * wb;
+        const rvx = (q.x - q.px) - (p.x - p.px), rvy = (q.y - q.py) - (p.y - p.py);
+        const nx = dx / d, ny = dy / d, tv = rvx * -ny + rvy * nx, f = tv * 0.08;
+        p.px -= -ny * f * wa / ws; p.py -= nx * f * wa / ws;
+        q.px += -ny * f * wb / ws; q.py += nx * f * wb / ws;
+        if (b.wild !== q.b.wild) wildPairs.push(b.wild ? b : q.b, b.wild ? q.b : b);
+        else if (b.t === q.b.t && b.t >= 0 && b.t < MT) mergePairs.push(b, q.b);
+        else { b.touched = true; q.b.touched = true; }
+      }
+    }
+  }
+  for (let i = 0; i < blobs.length; i++) for (let j = i + 1; j < blobs.length; j++) {
+    const a = blobs[i], b = blobs[j], dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy);
+    const mn = (a.r * a.sc + b.r * b.sc) * 0.55;
+    if (d < mn && d > 0.01) {
+      const o = (mn - d) / d * 0.5, wa = 1 / (a.r * a.r), wb = 1 / (b.r * b.r), ws = wa + wb;
+      for (const p of a.pts) { p.x -= dx * o * wa / ws; p.y -= dy * o * wa / ws; }
+      for (const p of b.pts) { p.x += dx * o * wb / ws; p.y += dy * o * wb / ws; }
+    }
+  }
+  depenetrate();
+  for (const b of blobs) for (const p of b.pts) {
+    if (p.x < Lw + PR) { const v = p.x - p.px; p.x = Lw + PR; if (bounce) p.px = p.x + v * 0.8; else p.py = p.y - (p.y - p.py) * 0.85; b.touched = true; }
+    else if (p.x > Rw - PR) { const v = p.x - p.px; p.x = Rw - PR; if (bounce) p.px = p.x + v * 0.8; else p.py = p.y - (p.y - p.py) * 0.85; b.touched = true; }
+    if (p.y > B - PR) { const v = p.y - p.py; p.y = B - PR; if (bounce) p.py = p.y + v * 0.7; p.px = p.x - (p.x - p.px) * 0.8; b.touched = true; }
+  }
+  processMerges();
+}
+
+// push any point that ended up inside another blob back out to that blob's nearest edge
+function depenetrate() {
+  const nb = blobs.length;
+  for (let i = 0; i < nb; i++) for (let j = 0; j < nb; j++) {
+    if (i === j) continue;
+    const A = blobs[i], Bb = blobs[j];
+    if (A.t === Bb.t) continue; // same numbers are about to merge anyway
+    const dx = A.cx - Bb.cx, dy = A.cy - Bb.cy, rr = (A.br || A.r) + (Bb.br || Bb.r);
+    if (dx * dx + dy * dy > rr * rr) continue;
+    const P = Bb.pts, n = Bb.n, br2 = ((Bb.br || Bb.r) + PR) ** 2, wa = share(A.m, Bb.m), wb = 1 - wa;
+    for (const p of A.pts) {
+      const ex = p.x - Bb.cx, ey = p.y - Bb.cy;
+      if (ex * ex + ey * ey > br2) continue;
+      let inside = false;
+      for (let k = 0, l = n - 1; k < n; l = k++) { const a = P[k], c = P[l];
+        if (((a.y > p.y) !== (c.y > p.y)) && (p.x < (c.x - a.x) * (p.y - a.y) / (c.y - a.y) + a.x)) inside = !inside; }
+      if (!inside) continue;
+      let best = 1e18, bk = 0, bt = 0, qx = 0, qy = 0;
+      for (let k = 0; k < n; k++) {
+        const a = P[k], c = P[(k + 1) % n], sx = c.x - a.x, sy = c.y - a.y, L2 = sx * sx + sy * sy || 1e-6;
+        let t = ((p.x - a.x) * sx + (p.y - a.y) * sy) / L2; t = t < 0 ? 0 : t > 1 ? 1 : t;
+        const x = a.x + sx * t, y = a.y + sy * t, d = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
+        if (d < best) { best = d; bk = k; bt = t; qx = x; qy = y; }
+      }
+      const mx = qx - p.x, my = qy - p.y, a = P[bk], c = P[(bk + 1) % n];
+      p.x += mx * wa; p.y += my * wa;
+      a.x -= mx * wb * (1 - bt); a.y -= my * wb * (1 - bt); c.x -= mx * wb * bt; c.y -= my * wb * bt;
+      A.touched = true; Bb.touched = true;
+    }
+  }
+}
+
+function processMerges() {
+  const hadWild = wildPairs.length;
+  for (let i = 0; i < wildPairs.length; i += 2) {
+    const w = wildPairs[i], o = wildPairs[i + 1];
+    if (w.dead || o.dead || o.t >= maxT()) continue;
+    w.t = o.t; w.wild = false; mergeGroup([o, w], true);
+  }
+  wildPairs.length = 0;
+  if (!mergePairs.length) { if (hadWild) blobs = blobs.filter(b => !b.dead); return; }
+  if (need() === 2) {
+    for (let i = 0; i < mergePairs.length; i += 2) mergeGroup([mergePairs[i], mergePairs[i + 1]]);
+  } else {
+    const par = new Map();
+    const find = x => { while (par.get(x) !== x) { par.set(x, par.get(par.get(x))); x = par.get(x); } return x; };
+    for (const b of mergePairs) if (!par.has(b)) par.set(b, b);
+    for (let i = 0; i < mergePairs.length; i += 2) { const a = find(mergePairs[i]), b = find(mergePairs[i + 1]); if (a !== b) par.set(a, b); }
+    const groups = new Map();
+    for (const b of par.keys()) { const r = find(b); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(b); }
+    for (const g of groups.values()) if (g.length >= 3) mergeGroup(g.slice(0, 3));
+  }
+  mergePairs.length = 0;
+  blobs = blobs.filter(b => !b.dead);
+}
+
+function mergeGroup(g, wild) {
+  for (const b of g) if (b.dead || b.t !== g[0].t) return;
+  let vx = 0, vy = 0, n = 0, x = 0, y = 0, bull = false;
+  for (const b of g) {
+    b.dead = true; x += b.cx; y += b.cy;
+    for (const p of b.pts) { vx += p.x - p.px; vy += p.y - p.py; n++; }
+    if (!b.touched && b.fling > 15 && b.age < 60) bull = true;
+  }
+  x /= g.length; y /= g.length; vx = vx / n * S; vy = vy / n * S;
+  const t = g[0].t + 1;
+  const nb = makeBlob(t, x, y, vx, vy - 1.5, rad(t - 1) / rad(t) * 0.95);
+  nb.pulse = 1; nb.touched = true;
+  maxTier = Math.max(maxTier, t); lvBest = Math.max(lvBest, val(t));
+  combo = gf - lastMerge < 75 ? combo + 1 : 1;
+  lastMerge = gf; merges++; lvCombo = Math.max(lvCombo, combo);
+  const mult = Math.min(combo, 5), gain = val(t) * mult * (mod && mod.id === 'double' ? 2 : 1);
+  score += gain;
+  const live = !replaying && !demo;
+  if (live) {
+    life.merges++; life.bestCombo = Math.max(life.bestCombo, combo);
+    if (M.base === 2) life.biggest = Math.max(life.biggest, val(t));
+    if (wild) life.rainbows++;
+  }
+  // power energy: bigger merges and combos charge faster
+  energy += 0.04 + 0.012 * Math.min(combo, 8) + (t >= 7 ? 0.1 : 0);
+  if (energy >= 1) { if (charges < 3) { charges++; energy -= 1; if (!(replaying && speed > 2)) { chargeFlash = 1; sound(0, 'charge'); } } else energy = 1; }
+  if (wild) award('rainbow');
+  if (live) {
+    mission('merges', 1); mission('value', val(t)); mission('combo', combo); if (wild) mission('rainbow', 1);
+    if (M.base === 2 && !seen.has(t)) {
+      seen.add(t); store.set('seen', [...seen]);
+      if (seen.size >= 10) award('collector');
+      if (t >= 5 && state === 'play') { discover = { t, ms: 2800 }; sound(t, 'ach'); }
+    }
+  }
+  // effects
+  const fx = !(replaying && speed > 2);
+  if (fx) {
+    pops.push({ x, y: y - rad(t) * 0.6, txt: (wild ? 'rainbow ' : '') + '+' + gain + (mult > 1 ? ' ×' + mult : ''), life: 60, t });
+    rings.push({ x, y, r: rad(t) * 0.8, life: 22, t });
+    for (let i = 0; i < 10 + t * 2; i++) {
+      const an = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4, r = rad(t);
+      parts.push({ x: x + Math.cos(an) * r * 0.6, y: y + Math.sin(an) * r * 0.6, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp - 2,
+                   life: 30 + Math.random() * 20, s: 3 + Math.random() * 4, t: Math.random() < 0.5 ? t : t - 1 });
+    }
+    if (moving() && t >= 7) shake = Math.min(14, 2 + (t - 6) * 2);
+    if (moving() && t >= 8) zoom = { x, y, k: 1 };
+    sound(t, 'merge', combo);
+    if (settings.haptic && navigator.vibrate && live) navigator.vibrate(Math.min(40, 8 + t * 2));
+  }
+  // achievements
+  award('first');
+  if (M.base === 2) {
+    if (val(t) >= 64) award('v64'); if (val(t) >= 256) award('v256');
+    if (val(t) >= 1024) award('v1024'); if (val(t) >= 4096) award('v4096');
+    if (modeId === 'slim' && val(t) >= 512) award('slim512');
+    if (modeId === 'classic' && flings === 0 && val(t) >= 512) award('patient');
+  } else if (val(t) >= 243) award('t243');
+  if (combo >= 3) award('c3'); if (combo >= 5) award('c5'); if (combo >= 8) award('c8');
+  if (bull) award('bull');
+  if (score >= 10000) award('s10k'); if (score >= 25000) award('s25k');
+  if (life.merges >= 500) award('zen');
+}
+
+// ---------- events (input is queued so replays are deterministic) ----------
+function applyEvent(e) {
+  if (e.k === 'sel') { sel = Math.max(0, Math.min(tray.length - 1, e.i)); return true; }
+  if (e.k === 'shake') {
+    if (charges < 1 || !blobs.length) return false;
+    charges--;
+    for (const b of blobs) {
+      const k = Math.min(1.4, 40 / b.r + 0.6), vx = (rng() - 0.5) * 7, vy = -(5 + rng() * 5) * k;
+      for (const p of b.pts) { p.px -= vx / S; p.py -= vy / S; }
+      b.touched = true;
+    }
+    powerUsed('shake'); return true;
+  }
+  if (e.k === 'pop') {
+    const b = blobs[e.bi];
+    if (charges < 1 || !b) return false;
+    charges--; b.dead = true; poof(b); blobs = blobs.filter(x => !x.dead);
+    powerUsed('pop'); return true;
+  }
+  if (e.k === 'swap') {
+    if (!swapOK || e.i === e.j || tray[e.i] == null || tray[e.j] == null) return false;
+    [tray[e.i], tray[e.j]] = [tray[e.j], tray[e.i]]; [trayIds[e.i], trayIds[e.j]] = [trayIds[e.j], trayIds[e.i]];
+    swapOK = false; sel = e.j; fuseTray();
+    if (!(replaying && speed > 2)) sound(2, 'fuse');
+    return true;
+  }
+  if (e.k === 'launch') {
+    const i = e.i ?? sel, t = tray[i];
+    if (t == null) return false;
+    if (M.level && thrown >= M.level.n) return false;
+    const b = makeBlob(t, e.x, LY, e.vx, e.vy, 1);
+    b.fling = Math.hypot(e.vx, e.vy); b.lazy = b.fling < 1.5;
+    if (b.fling > 12) mission('fling', 1);
+    if (b.fling > 2) flings++;
+    tray.splice(i, 1); trayIds.splice(i, 1); tray.push(drawPick()); trayIds.push(++tid);
+    thrown++; lastThrow = gf; swapOK = true;
+    if (sel > i) sel--;
+    fuseTray();
+    if (!replaying && !demo) life.plops++;
+    if (!(replaying && speed > 2)) sound(t, 'launch');
+    return true;
+  }
+  return false;
+}
+
+function powerUsed(kind) {
+  award('power');
+  mission('power', 1);
+  if (!replaying && !demo) { life.powers++; if (!tutPow) { tutPow = true; store.set('tutPow', true); } }
+  if (!(replaying && speed > 2)) { if (moving()) shake = kind === 'shake' ? 16 : 6; sound(0, kind); }
+}
+
+// ---------- update ----------
+function step() {
+  gf++;
+  if (replaying) { while (events.length && events[0].f <= gf) applyEvent(events.shift()); }
+  else for (const e of pending.splice(0)) if (applyEvent(e)) { e.f = gf; events.push(e); }
+  if (cool > 0) cool--;
+  if (M.chaos) {
+    if (mod && gf >= mod.until) mod = null;
+    if (!mod && gf % 1500 === 0) {
+      const c = CHAOS[(rng() * CHAOS.length) | 0]; mod = { id: c[0], name: c[1], until: gf + 900 };
+      if (!(replaying && speed > 2)) { banner = { txt: c[1], life: 110 }; sound(0, 'charge'); }
+    }
+  }
+  for (const b of blobs) { b.age++; if (b.sc < 1) b.sc = Math.min(1, b.sc + 0.02); if (b.pulse > 0) b.pulse = Math.max(0, b.pulse - 0.05); }
+  for (let s = 0; s < S; s++) substep();
+  blobs = blobs.filter(b => Number.isFinite(b.cx) && b.cy < H + 300);
+  if (blobs.length >= 26) award('packed');
+  if (blobs.length === 1 && blobs[0].age > 30 && M.base === 2 && val(blobs[0].t) >= 256) award('clean');
+  let inD = false;
+  for (const b of blobs) if (b.age > 90 && b.top < DANGER) inD = true;
+  danger = inD ? danger + 1 : Math.max(0, danger - 3);
+  if (demo) { if (danger > 100 || blobs.length > 34) startDemo(); return; }
+  if (!replaying) life.time++;
+  if (!replaying && !newBestShown && !M.target && bestAtStart > 0 && score > bestAtStart) {
+    newBestShown = true; banner = { txt: 'New best!', life: 110 }; confetti(); sound(0, 'win');
+  }
+  if (danger > 180) {
+    if (M.over) return endGame(false);
+    // zen: pop everything poking over the line
+    for (const b of blobs) if (b.top < DANGER + 40) { b.dead = true; poof(b); }
+    blobs = blobs.filter(b => !b.dead); danger = 0;
+  }
+  if (M.level && !finished) {
+    if (levelProg() >= M.level.v) return endLevel(true);
+    if (thrown >= M.level.n && gf - Math.max(lastThrow, lastMerge) > 150) return endLevel(false, 'throws');
+  }
+  if (M.target && maxTier >= M.target) return endGame(true);
+}
+const levelProg = () => { const L = M.level; return L.g === 'make' ? lvBest : L.g === 'score' ? score : L.g === 'combo' ? lvCombo : merges; };
+const STAR_SVG = '<svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.2 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>';
+function endLevel(win, reason) {
+  finished = true; grab = null; state = 'over'; $('#replayBar').classList.remove('on');
+  const L = M.level, n = M.lvl, st = win ? (thrown <= L.par[0] ? 3 : thrown <= L.par[1] ? 2 : 1) : 0;
+  if (!replaying) {
+    store.set('save', null); life.games++; store.set('life', life); mission('games', 1);
+    if ((lvlStars[n] || 0) < st) { lvlStars[n] = st; store.set('lvl', lvlStars); }
+    if (win) award('trail1'); if (st === 3) award('trail3');
+    if (LEVELS.every((_, i) => lvlStars[i] > 0)) award('trailAll');
+  }
+  overInfo = { level: n, win, st, reason, thrown, seed, mode: 'level', events: events.slice(), canReplay, B };
+  renderLvl();
+  setTimeout(() => { showPanel('lvl'); if (win && !replaying) confetti(); }, win ? 500 : 700);
+  sound(0, win ? 'win' : 'over');
+}
+function renderLvl() {
+  const o = overInfo, L = LEVELS[o.level];
+  $('#lTitle').textContent = o.win ? `Level ${o.level + 1} cleared` : 'Not this time';
+  $('#lSub').textContent = o.win ? `Used ${o.thrown} of ${L.n} throws. ` + (o.st < 3 ? `Finish by throw ${L.par[0]} for 3 stars.` : 'Perfect run.')
+    : `${goalText(L)}. ` + (o.reason === 'full' ? 'The jar overflowed.' : 'You ran out of throws.');
+  $('#lStars').innerHTML = [0, 1, 2].map(k => `<span class="star ${k < o.st ? 'on' : ''}" style="animation-delay:${0.3 + k * 0.18}s">${STAR_SVG}</span>`).join('');
+  $('#lStats').innerHTML = [['Best blob', lvBest ? lvBest.toLocaleString() : '–'], ['Merges', merges], ['Throws', o.thrown]].map(([a, b]) => `<div class="tile"><b>${b}</b><small>${a}</small></div>`).join('');
+  const hasNext = o.win && o.level < LEVELS.length - 1;
+  $('#lNext').textContent = hasNext ? 'Next level' : o.win ? 'All levels' : 'Try again';
+  $('#lNext').dataset.act = hasNext ? 'next' : o.win ? 'map' : 'retry';
+  $('#lRetry').hidden = !o.win;
+  $('#lReplay').style.display = o.canReplay ? '' : 'none';
+}
+function poof(b) {
+  for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, sp = 1 + Math.random() * 3;
+    parts.push({ x: b.cx + Math.cos(a) * b.r * .5, y: b.cy + Math.sin(a) * b.r * .5, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 30, s: 4, t: b.t }); }
+  sound(0, 'poof');
+}
+
+function confetti() {
+  if (settings.calm) return;
+  for (let i = 0; i < 90; i++) parts.push({ x: Math.random() * W, y: -10 - Math.random() * 120, vx: (Math.random() - 0.5) * 3, vy: 1 + Math.random() * 3,
+    life: 110 + Math.random() * 60, s: 3 + Math.random() * 4, t: (Math.random() * 12) | 0, sq: true, rot: Math.random() * 6 });
+}
+function fxStep() {
+  frame++;
+  dispScore += (score - dispScore) * 0.18; if (Math.abs(score - dispScore) < 0.5) dispScore = score;
+  scoreBump *= 0.88; chargeFlash *= 0.93; if (zoom && (zoom.k *= 0.9) < 0.02) zoom = null;
+  if (banner && --banner.life <= 0) banner = null;
+  if (hint && --hint.life <= 0) hint = null;
+  if (state === 'play' && !finished && danger > 0 && M.over && frame % 34 === 0) sound(0, 'beat');
+  if (state === 'play' && !replaying) {
+    if (tut === 0 && events.length >= 1) { tut = 1; store.set('tut', 1); }
+    if (tut === 1 && events.length >= 5) { tut = 2; store.set('tut', 2); }
+  }
+  for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vy += p.sq ? 0.04 : 0.2; p.vx *= p.sq ? 0.99 : 0.97; if (p.sq) p.rot += 0.12; p.life--; }
+  parts = parts.filter(p => p.life > 0);
+  for (const p of pops) { p.y -= 0.8; p.life--; }
+  pops = pops.filter(p => p.life > 0);
+  for (const r of rings) r.life--;
+  rings = rings.filter(r => r.life > 0);
+  shake *= 0.85;
+}
+
+// ---------- end / records ----------
+const fmtT = f => { const s = f / 60; return Math.floor(s / 60) + ':' + (s % 60).toFixed(1).padStart(4, '0'); };
+function endGame(win) {
+  if (M.level) return endLevel(false, 'full');
+  finished = true; grab = null;
+  if (replaying) { state = 'over'; showPanel('over'); $('#replayBar').classList.remove('on'); return; }
+  store.set('save', null);
+  life.games++; store.set('life', life);
+  mission('games', 1); if (!M.target) mission('score', score);
+  if (modeId === 'chaos' && score >= 5000) award('chaos');
+  const isSprint = !!M.target;
+  const rec = { s: isSprint ? gf : score, d: Date.now(), v: val(maxTier), me: true };
+  let list = (records[recKey()] || []).map(r => ({ ...r, me: false }));
+  if (!isSprint || win) list.push(rec);
+  list.sort((a, b) => isSprint ? a.s - b.s : b.s - a.s); list = list.slice(0, 5);
+  records[recKey()] = list.map(({ me, ...r }) => r); store.set('records', records);
+  let stk = 0;
+  if (M.daily) {
+    const ds = new Set(store.get('dailies', [])); ds.add(today()); store.set('dailies', [...ds].slice(-400));
+    stk = streak(); award('daily'); if (stk >= 3) award('streak3');
+  }
+  const newBest = isSprint ? (win && (!bestAtStart || gf < bestAtStart)) : (score > 0 && score > bestAtStart);
+  if (isSprint && win) { if (gf < 4 * 3600) award('spr3'); if (gf < 2.5 * 3600) award('spr2'); }
+  overInfo = { win, list, isSprint, seed, mode: modeId, events: events.slice(), canReplay, newBest, stk, B };
+  state = 'over';
+  renderOver();
+  setTimeout(() => {
+    showPanel('over');
+    if (!isSprint) countUp($('#oScore'), score, v => v.toLocaleString());
+    if (newBest) { confetti(); }
+  }, win ? 400 : 700);
+  sound(0, win ? 'win' : 'over');
+}
+function countUp(el, to, fmt) {
+  const t0 = performance.now();
+  const f = now => { const k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(Math.round(to * e)); if (k < 1) requestAnimationFrame(f); };
+  requestAnimationFrame(f);
+}
+function renderOver() {
+  const o = overInfo, m = MODES[o.mode];
+  $('#oTitle').textContent = o.isSprint ? (o.win ? 'Sprint done' : 'Jar’s full') : (m.over ? 'Jar’s full' : 'Zen session');
+  $('#oScore').textContent = o.isSprint ? (o.win ? fmtT(gf) : 'No 1024') : score.toLocaleString();
+  const date = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  $('#oSub').textContent = m.daily ? `Daily jar, ${date}` + (o.stk ? `. ${o.stk}-day streak` : '') : m.name;
+  $('#oBest').style.display = o.newBest ? 'block' : 'none';
+  $('#oImg').src = blobPic(Math.max(0, Math.min(BLOB_NAMES.length - 1, M.base === 2 ? maxTier : 3)));
+  $('#oSub').textContent += M.base === 2 ? `. Biggest: ${BLOB_NAMES[Math.min(BLOB_NAMES.length - 1, maxTier)][0]}` : '';
+  $('#oStats').innerHTML = [['Biggest blob', val(maxTier).toLocaleString()], ['Merges', merges], ['Time', fmtT(gf)]]
+    .map(([a, b]) => `<div class="tile"><b>${b}</b><small>${a}</small></div>`).join('');
+  $('#oRecs').innerHTML = o.list.map((r, i) =>
+    `<li class="${r.me ? 'me' : ''}"><span>${i + 1}</span><b>${o.isSprint ? fmtT(r.s) : r.s.toLocaleString()}</b><small>${new Date(r.d).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</small></li>`).join('');
+  $('#oReplay').style.display = o.canReplay ? '' : 'none';
+}
+
+// ---------- save / resume ----------
+function saveGame() {
+  if (state !== 'play' && state !== 'paused') return;
+  if (replaying || finished) return;
+  store.set('save', {
+    modeId, rs, score, combo, gf, maxTier, tray, sel, flings, merges, energy, charges, B, mod, lvl: M.lvl, thrown, lvBest, lvCombo, nextUp, swapOK,
+    blobs: blobs.map(b => { let vx = 0, vy = 0; for (const p of b.pts) { vx += p.x - p.px; vy += p.y - p.py; } return { t: b.t, x: b.cx, y: b.cy, vx: vx / b.n * S, vy: vy / b.n * S }; }),
+  });
+  store.set('life', life);
+}
+function resumeGame() {
+  const s = store.get('save', null); if (!s) return;
+  if (s.modeId === 'level') curLevel = s.lvl || 0;
+  newGame(s.modeId, 1, null, s.B);
+  rs = s.rs; score = s.score; gf = s.gf; maxTier = s.maxTier; tray = s.tray; sel = s.sel; nextUp = s.nextUp ?? pick(); while (tray.length < TRAY_N) tray.push(drawPick()); trayIds = tray.map(() => ++tid); tv.clear(); tvInit = true;
+  thrown = s.thrown || 0; lvBest = s.lvBest || 0; lvCombo = s.lvCombo || 0; swapOK = s.swapOK ?? true; flings = s.flings; merges = s.merges; energy = s.energy || 0; charges = s.charges || 0; mod = s.mod || null; dispScore = score;
+  blobs = [];
+  for (const b of s.blobs) { const nb = makeBlob(b.t, b.x, b.y, b.vx, b.vy, 1); nb.age = 200; nb.touched = true; }
+  canReplay = false;
+  startPlay();
+}
+addEventListener('visibilitychange', () => { if (document.hidden) { saveGame(); if (state === 'play') pause(); stopMusic(); } else if (settings.music) startMusic(); });
+addEventListener('pagehide', saveGame);
+
+// ---------- audio ----------
+let ac = null, master = null, noiseBuf = null;
+function ensureAudio() {
+  if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = 0.7; master.connect(ac.destination); }
+  if (ac.state === 'suspended') ac.resume();
+}
+function sound(t, kind, cmb = 1) {
+  if (!settings.sound || (demo && kind !== 'ui')) return;
+  try {
+    ensureAudio();
+    const now = ac.currentTime;
+    const tone = (f0, f1, dur, type, vol, delay = 0) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f0, now + delay); o.frequency.exponentialRampToValueAtTime(f1, now + delay + dur * 0.35);
+      g.gain.setValueAtTime(0.0001, now + delay); g.gain.exponentialRampToValueAtTime(vol, now + delay + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+      o.connect(g).connect(master); o.start(now + delay); o.stop(now + delay + dur + 0.05);
+    };
+    const noise = (dur, f, q, vol, type = 'bandpass', delay = 0) => {
+      if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate * 0.5, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+      const sr = ac.createBufferSource(), bf = ac.createBiquadFilter(), g = ac.createGain();
+      sr.buffer = noiseBuf; bf.type = type; bf.frequency.value = f; bf.Q.value = q;
+      g.gain.setValueAtTime(vol, now + delay); g.gain.exponentialRampToValueAtTime(0.0001, now + delay + dur);
+      sr.connect(bf).connect(g).connect(master); sr.start(now + delay); sr.stop(now + delay + dur + 0.02);
+    };
+    if (kind === 'merge') {
+      const f = 170 * Math.pow(1.09, t) * Math.pow(1.05, Math.min(cmb - 1, 8));
+      tone(f * 2.6, f, 0.17, 'sine', 0.26); tone(f * 1.5, f * 0.7, 0.22, 'triangle', 0.07, 0.015); noise(0.05, f * 5, 1.4, 0.1);
+      if (t >= 6) tone(f / 2, f / 3.2, 0.5, 'sine', 0.2);
+    }
+    else if (kind === 'launch') { noise(0.11, 1100, 0.9, 0.06); tone(300, 170, 0.09, 'sine', 0.05); }
+    else if (kind === 'fuse') { const f = 500 * Math.pow(1.1, t); tone(f, f * 1.5, 0.14, 'square', 0.04); }
+    else if (kind === 'poof') tone(300, 90, 0.2, 'sawtooth', 0.04);
+    else if (kind === 'ach') [523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.22, 'triangle', 0.08, i * 0.07));
+    else if (kind === 'win') [392, 523, 659, 784, 1047].forEach((f, i) => tone(f, f, 0.3, 'triangle', 0.1, i * 0.09));
+    else if (kind === 'over') { tone(220, 70, 0.7, 'sawtooth', 0.09); tone(110, 50, 0.8, 'sine', 0.2); }
+    else if (kind === 'ui') tone(700, 900, 0.06, 'sine', 0.04);
+    else if (kind === 'beat') { tone(70, 45, 0.18, 'sine', 0.28); tone(70, 45, 0.16, 'sine', 0.16, 0.16); }
+    else if (kind === 'charge') [660, 880, 1320].forEach((f, i) => tone(f, f * 1.02, 0.16, 'triangle', 0.07, i * 0.05));
+    else if (kind === 'shake') { tone(90, 40, 0.5, 'sawtooth', 0.12); tone(180, 60, 0.4, 'square', 0.04, 0.05); }
+    else if (kind === 'pop') { tone(900, 120, 0.25, 'square', 0.06); tone(200, 60, 0.3, 'sine', 0.2); }
+  } catch (e) {}
+}
+
+// ---------- generative music (soft, low, optional) ----------
+let musicTimer = null, mNext = 0, mStep = 0, mBus = null;
+const CHORDS = [[0, 4, 7], [9, 12, 16], [5, 9, 12], [7, 11, 14]];
+function mNote(f, t, dur, vol, type) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(mBus); o.start(t); o.stop(t + dur + 0.05);
+}
+function schedMusic() {
+  const beat = 60 / 76 / 2;
+  while (mNext < ac.currentTime + 0.4) {
+    const ch = CHORDS[Math.floor(mStep / 16) % 4];
+    if (mStep % 16 === 0) ch.forEach(n => mNote(130.81 * 2 ** (n / 12), mNext, beat * 16.5, 0.03, 'triangle'));
+    if (mStep % 4 === 0) mNote(65.41 * 2 ** (ch[0] / 12), mNext, beat * 3.5, 0.07, 'sine');
+    if (Math.random() < 0.42) mNote(261.63 * 2 ** ((ch[(Math.random() * 3) | 0] + (Math.random() < 0.5 ? 0 : 12)) / 12), mNext, 0.7, 0.045, 'sine');
+    mNext += beat; mStep++;
+  }
+}
+function startMusic() {
+  if (musicTimer || !settings.music) return;
+  try { ensureAudio(); } catch (e) { return; }
+  if (!mBus) {
+    mBus = ac.createGain(); mBus.gain.value = 0;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1600;
+    const dl = ac.createDelay(); dl.delayTime.value = 0.39; const fb = ac.createGain(); fb.gain.value = 0.33;
+    mBus.connect(lp); lp.connect(master); lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(master);
+  }
+  mBus.gain.setTargetAtTime(0.55, ac.currentTime, 1.2);
+  mNext = ac.currentTime + 0.1; musicTimer = setInterval(schedMusic, 100);
+}
+function stopMusic() { if (!musicTimer) return; clearInterval(musicTimer); musicTimer = null; if (mBus) mBus.gain.setTargetAtTime(0, ac.currentTime, 0.25); }
+addEventListener('pointerdown', () => { if (settings.music) startMusic(); });
+
+// ---------- input ----------
+function pos(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / scale, (e.clientY - r.top) / scale]; }
+const TOPZONE = T - 8;
+const clampX = (t, x) => { const r = rad(t) + PR + 2; return Math.max(M.L + r, Math.min(M.R - r, x)); };
+const launchX = () => clampX(tray[sel] ?? 0, lx);
+function grabVel(g = grab) {
+  if (!g || !g.aiming) return [0, 0];
+  const dx = g.fx - g.x, dy = g.fy - LY, dist = Math.hypot(dx, dy) || 1;
+  const d = Math.max(0, dist - Math.max(0, g.ay - LY));
+  if (d < 8) return [0, 0];
+  const f = Math.pow(Math.min(d, 330) / 330, 1.35) * 27;
+  return [dx / dist * f, dy / dist * f];
+}
+function slotAt(x, y) {
+  for (let i = 0; i < TRAY_N; i++) { const s = traySlot(i); if (x >= s.x - 6 && x <= s.x + s.w + 6 && y >= s.y - 6 && y <= s.y + s.h + 14) return i; }
+  return -1;
+}
+const inBox = (x, y, r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+function blobAt(x, y) {
+  let bi = -1, bd = 1e9;
+  for (let i = 0; i < blobs.length; i++) { const b = blobs[i], d = Math.hypot(b.cx - x, b.cy - y); if (d < (b.br || b.r) + PR + 8 && d < bd) { bd = d; bi = i; } }
+  return bi;
+}
+function selSlot(i) { if (state === 'play' && i >= 0 && i < TRAY_N && i !== sel) { sel = i; sound(0, 'ui'); } }
+cv.addEventListener('pointerdown', e => {
+  if (state !== 'play') return;
+  e.preventDefault();
+  const [x, y] = pos(e);
+  if (M.level) {
+    if (inBox(x, y, POW.pop)) { sound(0, 'ui'); startLevel(curLevel); return; }
+    if (inBox(x, y, POW.shake)) return;
+  }
+  if (inBox(x, y, POW.shake)) { if (charges > 0) pending.push({ k: 'shake' }); else hint = { txt: 'Merge blobs to charge power', life: 90 }; popMode = false; return; }
+  if (inBox(x, y, POW.pop)) { if (charges > 0) { popMode = !popMode; sound(0, 'ui'); } else hint = { txt: 'Merge blobs to charge power', life: 90 }; return; }
+  if (popMode) { const bi = blobAt(x, y); if (bi >= 0) pending.push({ k: 'pop', bi }); popMode = false; return; }
+  if (y > B + 8) return; // empty space in the bottom bar
+  let i = slotAt(x, y), fromTray = i >= 0;
+  if (!fromTray) i = sel;
+  if (tray[i] == null) return;
+  cv.setPointerCapture(e.pointerId);
+  sel = i; lx = x;
+  const inJar = y >= TOPZONE;
+  // pressing in the jar: blob appears above that spot, aim starts from your finger
+  grab = { i, fromTray, x: clampX(tray[i], x), fx: x, fy: y, aiming: inJar, ay: inJar ? y : TOPZONE, moved: 0, sx: x, sy: y, t0: frame };
+  if (fromTray) sound(0, 'ui');
+});
+cv.addEventListener('pointermove', e => {
+  if (state !== 'play') return;
+  const [x, y] = pos(e);
+  lx = x; lastPY = e.pointerType === 'mouse' ? y : 999; hoverOK = e.pointerType === 'mouse' && y > TOPZONE - 60;
+  if (!grab) return;
+  grab.fx = x; grab.fy = y; grab.moved = Math.max(grab.moved, Math.hypot(x - grab.sx, y - grab.sy));
+  if (y < TOPZONE) { grab.aiming = false; grab.ay = TOPZONE; grab.x = clampX(tray[grab.i], x); }
+  else if (!grab.aiming) grab.aiming = true;
+});
+cv.addEventListener('pointerup', e => {
+  const g = grab; grab = null;
+  if (!g || state !== 'play') return;
+  const [x, y] = pos(e);
+  // released over the shelf: on another blob = swap, on its own spot = put back. A tap just highlights.
+  const over = slotAt(x, y);
+  if (over >= 0) {
+    if (g.fromTray && over !== g.i && g.moved >= 10) {
+      if (swapOK) pending.push({ k: 'swap', i: g.i, j: over });
+      else hint = { txt: 'You can swap again after your next throw', life: 110 };
+    }
+    return;
+  }
+  if (g.fromTray && g.moved < 10) return;
+  if (M.level && thrown >= M.level.n) { hint = { txt: 'No throws left', life: 90 }; return; }
+  const [vx, vy] = grabVel(g);
+  pending.push({ k: 'launch', i: g.i, x: +g.x.toFixed(2), vx: +vx.toFixed(3), vy: +vy.toFixed(3) });
+});
+cv.addEventListener('pointercancel', () => { grab = null; });
+cv.addEventListener('contextmenu', e => e.preventDefault());
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (state === 'play') pause(); else if (state === 'paused') unpause(); return; }
+  if (state !== 'play') return;
+  if (e.key >= '1' && e.key <= '4') selSlot(+e.key - 1);
+  if (e.key === 'q' || e.key === 'Q') selSlot((sel + TRAY_N - 1) % TRAY_N);
+  if (e.key === 'e' || e.key === 'E' || e.key === 'Tab') { e.preventDefault(); selSlot((sel + 1) % TRAY_N); }
+  if (e.key === ' ') { e.preventDefault(); pending.push({ k: 'launch', i: sel, x: +launchX().toFixed(2), vx: 0, vy: 0 }); }
+  if (e.key === 'r' || e.key === 'R') { newGame(modeId); }
+});
+
+// ---------- UI ----------
+const MENU_SHEETS = ['modes', 'ach', 'themes', 'stats', 'settings', 'help', 'about', 'missions', 'levels', 'lvinfo'];
+const ICON = {
+  check: '<svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  lock: '<svg class="i" viewBox="0 0 24 24"><rect x="5.5" y="11" width="13" height="9" rx="2"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>',
+};
+const GLYPH = {
+  classic: '<svg viewBox="0 0 42 42"><circle cx="21" cy="22" r="15" fill="#FFF1DC" stroke="#12081F" stroke-width="3"/><circle cx="16" cy="20" r="2.4" fill="#12081F"/><circle cx="26" cy="20" r="2.4" fill="#12081F"/></svg>',
+  slim: '<svg viewBox="0 0 42 42"><rect x="12" y="5" width="18" height="33" rx="8" fill="#FFF1DC" stroke="#12081F" stroke-width="3"/><circle cx="17.5" cy="17" r="2.2" fill="#12081F"/><circle cx="24.5" cy="17" r="2.2" fill="#12081F"/></svg>',
+  threes: '<svg viewBox="0 0 42 42"><g fill="#FFF1DC" stroke="#12081F" stroke-width="3"><circle cx="21" cy="12" r="8"/><circle cx="12" cy="28" r="8"/><circle cx="30" cy="28" r="8"/></g></svg>',
+  chaos: '<svg viewBox="0 0 42 42"><path d="M24 4 9 24h10l-3 14 17-22H23z" fill="#FFF1DC" stroke="#12081F" stroke-width="3" stroke-linejoin="round"/></svg>',
+  sprint: '<svg viewBox="0 0 42 42"><circle cx="21" cy="23" r="14" fill="#FFF1DC" stroke="#12081F" stroke-width="3"/><path d="M21 23V15M21 23l5 3M17 5h8" stroke="#12081F" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
+  zen: '<svg viewBox="0 0 42 42"><circle cx="21" cy="22" r="15" fill="#FFF1DC" stroke="#12081F" stroke-width="3"/><path d="M13.5 20q2.5 2.5 5 0M23.5 20q2.5 2.5 5 0" stroke="#12081F" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>',
+};
+function showPanel(id) {
+  $$('.screen,.sheet').forEach(p => p.classList.toggle('on', p.id === id || (p.id === 'menu' && MENU_SHEETS.includes(id))));
+  $('#pauseBtn').style.display = state === 'play' ? 'grid' : 'none';
+  if (id === 'menu' || id === 'modes') renderMenu();
+  if (id === 'ach') renderCollection(dexTab);
+  if (id === 'missions') renderMissions();
+  if (id === 'levels') renderLevels();
+  if (id === 'themes') renderThemes();
+  if (id === 'settings') renderSettings();
+  if (id === 'stats') renderStats();
+}
+function closeSheet(sh) {
+  if (sh.id === 'lvinfo') { showPanel('levels'); return true; }
+  if (sh.id === 'help') { showPanel('modes'); return true; }
+  if (sh.id === 'about') { showPanel('settings'); return true; }
+  if (MENU_SHEETS.includes(sh.id)) { showPanel('menu'); return true; }
+  if (sh.id === 'pause') { unpause(); return true; }
+  return false;
+}
+$$('.sheet').forEach(sh => sh.addEventListener('pointerdown', e => { if (e.target === sh) closeSheet(sh); }));
+$$('.sheet .card').forEach(card => {
+  const hd = document.createElement('div'); hd.className = 'handle'; card.prepend(hd);
+  let y0 = null, dy = 0;
+  hd.addEventListener('pointerdown', e => { y0 = e.clientY; dy = 0; hd.setPointerCapture(e.pointerId); card.style.transition = 'none'; });
+  hd.addEventListener('pointermove', e => { if (y0 == null) return; dy = Math.max(0, e.clientY - y0); card.style.transform = `translateY(${dy}px)`; });
+  const end = () => {
+    if (y0 == null) return; y0 = null;
+    card.style.transition = 'transform .25s cubic-bezier(.2,1,.3,1)';
+    if (dy > 90 && closeSheet(card.parentElement)) { card.style.transition = 'none'; card.style.transform = ''; }
+    else card.style.transform = '';
+  };
+  hd.addEventListener('pointerup', end); hd.addEventListener('pointercancel', end);
+});
+// phone back button: close the top sheet, pause a game, or leave a finished game; only exits from the bare menu
+history.pushState({ pj: 1 }, '');
+addEventListener('popstate', () => {
+  const open = $$('.sheet.on').map(x => x).pop();
+  const again = () => history.pushState({ pj: 1 }, '');
+  if (open && closeSheet(open)) return again();
+  if (state === 'play') { pause(); return again(); }
+  if (state === 'replay') { $('#rExit').onclick(); return again(); }
+  if (state === 'over' || state === 'paused') { goMenu(); return again(); }
+});
+const fmtLong = f => { const m = Math.floor(f / 3600); return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m + 'm'; };
+function renderStats() {
+  const items = [['Games played', life.games], ['Merges', life.merges.toLocaleString()], ['Blobs thrown', life.plops.toLocaleString()],
+    ['Biggest blob', life.biggest ? life.biggest.toLocaleString() : '–'], ['Best combo', '×' + (life.bestCombo || 0)], ['Time played', fmtLong(life.time || 0)],
+    ['Power-ups used', life.powers || 0], ['Rainbows merged', life.rainbows || 0], ['Achievements', unlocked.size + ' of ' + ACH.length], ['Blobs found', seen.size + ' of ' + BLOB_NAMES.length], ['Missions done', life.missions || 0], ['Daily streak', streak() + (streak() === 1 ? ' day' : ' days')]];
+  $('#statGrid').innerHTML = items.map(([a, b]) => `<div class="tile"><b>${b}</b><small>${a}</small></div>`).join('');
+}
+function renderMenu() {
+  const sv = store.get('save', null);
+  $('#playBtn').innerHTML = sv ? `Continue<small>${MODES[sv.modeId].name}, ${sv.score.toLocaleString()} points</small>` : 'Play';
+  $('#newBtn').hidden = !sv;
+  const d = new Date();
+  $('#calM').textContent = d.toLocaleDateString(undefined, { month: 'short' });
+  $('#calD').textContent = d.getDate();
+  const dr = (records[recKey('daily')] || [])[0], stk = streak();
+  $('#dailySub').textContent = stk ? `${stk}-day streak` : dr ? `Best ${dr.s.toLocaleString()}` : 'New jar today';
+  const tot = LEVELS.reduce((a, _, i) => a + (lvlStars[i] || 0), 0), nextLv = LEVELS.findIndex((_, i) => !lvlStars[i]);
+  $('#trailN').textContent = nextLv < 0 ? '★' : nextLv + 1;
+  $('#trailSub').textContent = tot ? `${tot} of ${LEVELS.length * 3} stars` : '24 puzzle jars';
+  const mm = todayMissions(), nd = mm.list.filter(x => x.done).length;
+  $('#mPips').innerHTML = mm.list.map(x => `<i class="${x.done ? 'on' : ''}"></i>`).join('');
+  $('#mCount').textContent = nd === 3 ? 'All done' : `${nd} of 3`;
+  $('#modeList').innerHTML = ['classic', 'chaos', 'slim', 'threes', 'sprint', 'zen'].map(id => {
+    const m = MODES[id], r = (records[id] || [])[0];
+    const pb = !m.over ? (life.merges ? life.merges.toLocaleString() : '') : r ? (m.target ? fmtT(r.s) : r.s.toLocaleString()) : '';
+    const lbl = !m.over ? 'merges' : m.target ? 'best time' : 'best';
+    return `<button class="mode" data-mode="${id}" style="--c:${m.col}">${GLYPH[id]}<span class="t"><b>${m.name}</b><small>${m.desc}</small></span>${pb ? `<span class="pb">${pb}<small>${lbl}</small></span>` : ''}</button>`;
+  }).join('');
+  $$('[data-mode]').forEach(b => b.onclick = () => { sound(0, 'ui'); store.set('save', null); newGame(b.dataset.mode); startPlay(); });
+}
+let dexTab = 'dex';
+const dexCache = {};
+function blobPic(t) {
+  if (dexCache[t]) return dexCache[t];
+  const c = document.createElement('canvas'); c.width = c.height = 136;
+  const keepCtx = ctx, keepM = M; ctx = c.getContext('2d'); M = MODES.classic;
+  drawStatic(t, 68, 78, 40 / rad(t), null);
+  ctx = keepCtx; M = keepM;
+  return dexCache[t] = c.toDataURL();
+}
+function renderCollection(tab) {
+  dexTab = tab;
+  $('#tabDex').setAttribute('aria-selected', tab === 'dex'); $('#tabAch').setAttribute('aria-selected', tab === 'ach');
+  $('#dexList').hidden = tab !== 'dex'; $('#achList').hidden = tab !== 'ach';
+  if (tab === 'dex') {
+    $('#achLede').textContent = `${seen.size} of ${BLOB_NAMES.length} blobs found. Merge bigger to meet the rest.`;
+    $('#dexList').innerHTML = BLOB_NAMES.map(([n, d], t) => seen.has(t)
+      ? `<div class="dx"><img src="${blobPic(t)}" alt=""><b>${n}</b><small>${Math.pow(2, t).toLocaleString()}. ${d}</small></div>`
+      : `<div class="dx no"><span class="sil">?</span><b>Unknown</b><small>Make a ${Math.pow(2, t).toLocaleString()} to meet it.</small></div>`).join('');
+  } else renderAch();
+}
+$('#tabDex').onclick = () => { sound(0, 'ui'); renderCollection('dex'); };
+$('#tabAch').onclick = () => { sound(0, 'ui'); renderCollection('ach'); };
+function renderMissions() {
+  const m = todayMissions();
+  $('#missionList').innerHTML = m.list.map(x => {
+    const pct = Math.round(x.prog / x.goal * 100), max = MISSION_T[x.k][2] === 'max';
+    const count = x.done ? 'Done' : max && x.k !== 'combo' ? `best ${x.prog.toLocaleString()}` : `${x.prog.toLocaleString()} of ${x.goal.toLocaleString()}`;
+    return `<div class="mrow ${x.done ? 'done' : ''}"><div class="top">${MISSION_T[x.k][0](x.goal)}<span>${count}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+  }).join('');
+}
+function renderAch() {
+  $('#achLede').textContent = `${unlocked.size} of ${ACH.length} unlocked. Each one earns a star toward themes.`;
+  $('#achList').innerHTML = ACH.map(([id, , n, d], i) => {
+    const got = unlocked.has(id);
+    return `<div class="ach ${got ? 'got' : ''}" style="--c:${CANDY[i % CANDY.length]}"><span class="coin">${got ? ICON.check : ICON.lock}</span><span><b>${n}</b><small>${d}</small></span></div>`;
+  }).join('');
+}
+function renderThemes() {
+  $('#themeLede').textContent = `You have ${stars()} stars. Achievements and daily missions earn more.`;
+  $('#themeList').innerHTML = THEMES.map(t => {
+    const lock = stars() < t.need;
+    const dots = [0, 2, 4, 6, 8, 10, 3].map(i => `<i style="background:${hsl(t.pal(i))}"></i>`).join('');
+    const note = lock ? `Unlocks at ${t.need} stars` : t.id === TH.id ? 'In use' : 'Tap to use';
+    return `<button class="th ${t.id === TH.id ? 'sel' : ''} ${lock ? 'lock' : ''}" data-th="${t.id}" style="--tb:${t.jar}"><span class="jm">${dots}</span><b>${t.name}</b><small>${note}</small></button>`;
+  }).join('');
+  $$('[data-th]').forEach(b => b.onclick = () => {
+    const t = THEMES.find(x => x.id === b.dataset.th); if (stars() < t.need) return;
+    settings.theme = t.id; store.set('settings', settings); applyTheme(); for (const k in dexCache) delete dexCache[k]; renderThemes(); sound(0, 'ui');
+  });
+}
+function renderSettings() {
+  for (const [id, k] of [['sSound', 'sound'], ['sMusic', 'music'], ['sHaptic', 'haptic'], ['sShake', 'shake'], ['sAim', 'aim'], ['sCalm', 'calm']]) {
+    const el = $('#' + id); el.checked = settings[k];
+    el.onchange = () => { settings[k] = el.checked; store.set('settings', settings); if (k === 'music') settings.music ? startMusic() : stopMusic(); };
+  }
+}
+$('#sReset').onclick = () => {
+  if (!confirm('Erase all scores, achievements and themes on this device?')) return;
+  for (const k of ['ach', 'records', 'life', 'save', 'settings', 'dailies', 'tut', 'tutPow', 'seen', 'missions']) localStorage.removeItem('pj_' + k);
+  location.reload();
+};
+$$('[data-go]').forEach(b => b.onclick = () => { sound(0, 'ui'); showPanel(b.dataset.go); });
+$('#playBtn').onclick = () => { sound(0, 'ui'); if (store.get('save', null)) resumeGame(); else { newGame('classic'); startPlay(); } };
+$('#newBtn').onclick = () => { sound(0, 'ui'); store.set('save', null); newGame('classic'); startPlay(); };
+$('#dailyBtn').onclick = () => { sound(0, 'ui'); store.set('save', null); newGame('daily'); startPlay(); };
+function squishLogo() {
+  if (settings.calm) return;
+  $$('#logo span').forEach((sp, i) => { sp.classList.remove('sq'); void sp.offsetWidth; setTimeout(() => sp.classList.add('sq'), i * 55); });
+}
+$('#logo').onclick = () => { squishLogo(); sound(4, 'merge'); };
+function startDemo() { newGame('classic', (Math.random() * 1e6) | 0); demo = true; }
+function startLevel(n) {
+  curLevel = n; store.set('save', null); newGame('level'); startPlay();
+  banner = { txt: goalText(LEVELS[n]), life: 130 };
+}
+function renderLevels() {
+  const tot = LEVELS.reduce((a, _, i) => a + (lvlStars[i] || 0), 0), nextLv = LEVELS.findIndex((_, i) => !lvlStars[i]);
+  $('#lvLede').textContent = `${tot} of ${LEVELS.length * 3} stars. Each jar has one goal and a set number of throws.`;
+  $('#lvGrid').innerHTML = LEVELS.map((L, i) => {
+    const open = i === 0 || (lvlStars[i - 1] || 0) > 0, st = lvlStars[i] || 0;
+    return `<button class="lv ${open ? '' : 'lock'} ${i === nextLv ? 'next' : ''}" data-lv="${i}" style="--c:${CANDY[i % CANDY.length]}" ${open ? '' : 'disabled'} aria-label="Level ${i + 1}${open ? '' : ', locked'}">`
+      + `<b>${open ? i + 1 : ICON.lock}</b><span class="ls">${[0, 1, 2].map(k => `<i class="${k < st ? 'on' : ''}"></i>`).join('')}</span></button>`;
+  }).join('');
+  $$('[data-lv]').forEach(b => b.onclick = () => { sound(0, 'ui'); openLevelInfo(+b.dataset.lv); });
+}
+function openLevelInfo(n) {
+  const L = LEVELS[n], st = lvlStars[n] || 0, tw = [];
+  if (L.jar === 'slim') tw.push('Narrow jar');
+  if (L.mod) tw.push(CHAOS.find(c => c[0] === L.mod)[1]);
+  if (L.pre) tw.push(L.pre.length === 1 ? 'Starts with a blob inside' : `Starts with ${L.pre.length} blobs inside`);
+  $('#liTitle').textContent = `Level ${n + 1}`;
+  const gt = L.g === 'make' ? Math.round(Math.log2(L.v)) : L.g === 'combo' ? 4 : L.g === 'score' ? 6 : 2;
+  $('#liImg').src = blobPic(gt);
+  $('#liGoal').textContent = goalText(L);
+  $('#liThrows').textContent = `${L.n} throws` + (st ? `. Your best: ${st} star${st > 1 ? 's' : ''}` : '');
+  $('#liChips').innerHTML = (tw.length ? tw : ['No twists']).map(x => `<span class="chip ${tw.length ? 'tw' : ''}">${x}</span>`).join('');
+  const row = (k, txt) => `<div><span class="stars">${[0, 1, 2].map(j => `<i class="${j < k ? 'on' : ''}"></i>`).join('')}</span>${txt}</div>`;
+  $('#liPar').innerHTML = row(3, `Finish within ${L.par[0]} throws`) + row(2, `Finish within ${L.par[1]} throws`) + row(1, `Finish within ${L.n} throws`);
+  $('#liPlay').textContent = st ? 'Play again' : 'Play';
+  $('#liPlay').onclick = () => { sound(0, 'ui'); startLevel(n); };
+  showPanel('lvinfo');
+}
+$('#trailBtn').onclick = () => { sound(0, 'ui'); showPanel('levels'); };
+$('#lNext').onclick = () => { sound(0, 'ui'); const a = $('#lNext').dataset.act; if (a === 'next') startLevel(overInfo.level + 1); else if (a === 'retry') startLevel(overInfo.level); else { goMenu(); showPanel('levels'); } };
+$('#lRetry').onclick = () => { sound(0, 'ui'); startLevel(overInfo.level); };
+$('#lMap').onclick = () => { sound(0, 'ui'); goMenu(); showPanel('levels'); };
+$('#lReplay').onclick = () => $('#oReplay').onclick();
+function goMenu() { setTimeout(layoutMascot, 30); replaying = false; state = 'menu'; $('#replayBar').classList.remove('on'); startDemo(); showPanel('menu'); squishLogo(); }
+function demoAI() {
+  if (gf % 32 !== 0) return;
+  const i = (Math.random() * TRAY_N) | 0, t = tray[i];
+  const match = blobs.filter(b => b.t === t && b.age > 30);
+  const x = match.length ? match[(Math.random() * match.length) | 0].cx + (Math.random() - 0.5) * 16 : M.L + 50 + Math.random() * (M.R - M.L - 100);
+  pending.push({ k: 'launch', i, x: clampX(t, x), vx: (Math.random() - 0.5) * 2, vy: Math.random() < 0.25 ? 9 : 0 });
+}
+function syncPauseBtns() {
+  $('#pSound').setAttribute('aria-pressed', settings.sound); $('#pMusic').setAttribute('aria-pressed', settings.music);
+}
+$('#pSound').onclick = () => { settings.sound = !settings.sound; store.set('settings', settings); syncPauseBtns(); };
+$('#pMusic').onclick = () => { settings.music = !settings.music; store.set('settings', settings); settings.music ? startMusic() : stopMusic(); syncPauseBtns(); };
+$('#oShare').onclick = async () => {
+  const o = overInfo, m = MODES[o.mode];
+  const txt = (o.isSprint && o.win ? `I made a 1024 blob in ${fmtT(gf)}` : `I scored ${score.toLocaleString()}`) + ` in Plopjar ${m.name}` + (m.daily ? ` (${today()})` : '') + `. Biggest blob: ${val(maxTier).toLocaleString()}.`;
+  try {
+    if (navigator.share) await navigator.share({ title: 'Plopjar', text: txt, url: location.href });
+    else { await navigator.clipboard.writeText(txt + ' ' + location.href); flash('Copied to clipboard', 'Paste it anywhere to share.'); }
+  } catch (e) {}
+};
+function startPlay() { replaying = false; demo = false; speed = 1; state = 'play'; $('#replayBar').classList.remove('on'); showPanel(null); }
+function pause() { if (state !== 'play') return; state = 'paused'; grab = null; popMode = false; $('#pInfo').textContent = M.level ? `${M.name}. ${goalText(M.level)}, ${M.level.n - thrown} throws left` : M.target ? `${M.name}, ${fmtT(gf)} so far` : `${M.name}, ${score.toLocaleString()} points`; syncPauseBtns(); showPanel('pause'); }
+function unpause() { state = 'play'; showPanel(null); }
+$('#pauseBtn').onclick = () => { sound(0, 'ui'); pause(); };
+$('#pResume').onclick = unpause;
+$('#pRestart').onclick = () => { store.set('save', null); newGame(modeId); startPlay(); };
+$('#pQuit').onclick = () => { state = 'play'; saveGame(); goMenu(); };
+$('#oAgain').onclick = () => { newGame(overInfo.mode); startPlay(); };
+$('#oMenu').onclick = () => goMenu();
+$('#oReplay').onclick = () => {
+  const o = overInfo; replaying = true; if (o.level != null) curLevel = o.level; newGame(o.mode, o.seed, o.events, o.B);
+  speed = 2; state = 'replay'; showPanel(null); $('#replayBar').classList.add('on'); setSpeedBtns();
+};
+function setSpeedBtns() { $$('[data-sp]').forEach(b => b.classList.toggle('sel', +b.dataset.sp === speed)); }
+$$('[data-sp]').forEach(b => b.onclick = () => { speed = +b.dataset.sp; setSpeedBtns(); });
+$('#rExit').onclick = () => { replaying = false; state = 'over'; $('#replayBar').classList.remove('on'); showPanel(overInfo.level != null ? 'lvl' : 'over'); };
+
+// ---------- drawing ----------
+const INK = '#12081F';
+function blobFill(cx, cy, r, t, glowOn) {
+  const c = pal(t);
+  let gr;
+  if (t < 0 && ctx.createConicGradient) {
+    gr = ctx.createConicGradient(frame * 0.05, cx, cy);
+    for (let k = 0; k <= 6; k++) gr.addColorStop(k / 6, `hsl(${k * 60},95%,66%)`);
+  } else {
+    gr = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.4, r * 0.08, cx, cy, r * 1.15);
+    gr.addColorStop(0, hsl(c, 16)); gr.addColorStop(0.7, hsl(c)); gr.addColorStop(1, hsl(c, -14));
+  }
+  ctx.fillStyle = gr;
+  if (TH.glow && glowOn) { ctx.shadowColor = hsl(c, 0, 0.8); ctx.shadowBlur = 22; }
+  ctx.fill(); ctx.shadowBlur = 0;
+  ctx.lineWidth = 3; ctx.strokeStyle = INK; ctx.stroke();
+}
+function drawFace(x, y, r, ang, t, sd, mood) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang * 0.35);
+  const c = pal(t), ink = c[2] < 44 ? '#f4f2ff' : INK;
+  const blink = ((frame + sd) % 270) < 7;
+  const er = Math.max(2, r * 0.085), ex = r * 0.27, ey = -r * 0.12;
+  let gox = 0, goy = 0;
+  if (gaze && t >= 0) { // pupils follow the blob you're holding
+    const dx = gaze.x - x, dy = gaze.y - y, d = Math.hypot(dx, dy);
+    if (d > r * 0.6) { const k = er * 0.45 / d, a = -ang * 0.35, c2 = Math.cos(a), s2 = Math.sin(a); gox = (dx * c2 - dy * s2) * k; goy = (dx * s2 + dy * c2) * k; }
+  }
+  ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineCap = 'round';
+  for (const sx of [-1, 1]) {
+    if (blink || mood === 'happy') {
+      ctx.lineWidth = Math.max(1.6, er * 0.6); ctx.beginPath();
+      if (mood === 'happy') ctx.arc(sx * ex, ey + er * 0.4, er, Math.PI * 1.1, Math.PI * 1.9); else { ctx.moveTo(sx * ex - er, ey); ctx.lineTo(sx * ex + er, ey); }
+      ctx.stroke();
+    } else if (mood === 'scared') {
+      ctx.beginPath(); ctx.arc(sx * ex, ey, er * 1.25, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = c[2] < 44 ? INK : '#fff'; ctx.beginPath(); ctx.arc(sx * ex, ey, er * 0.55, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = ink;
+    } else {
+      ctx.beginPath(); ctx.arc(sx * ex + gox, ey + goy, er, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = c[2] < 44 ? INK : '#fff'; ctx.beginPath(); ctx.arc(sx * ex - er * 0.3 + gox, ey - er * 0.35 + goy, er * 0.35, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = ink;
+    }
+  }
+  if (t >= 6) { // eyebrows from Jello up
+    const lift = mood === 'scared' ? er * 0.7 : 0;
+    ctx.lineWidth = Math.max(1.6, er * 0.55); ctx.strokeStyle = ink;
+    for (const sx of [-1, 1]) { ctx.beginPath(); ctx.moveTo(sx * ex - er * 1.2, ey - er * 2 - lift); ctx.quadraticCurveTo(sx * ex, ey - er * 2.7 - lift, sx * ex + er * 1.2, ey - er * 2 - lift); ctx.stroke(); }
+  }
+  if (r > 22) { ctx.fillStyle = 'rgba(255,70,120,0.25)'; for (const sx of [-1, 1]) { ctx.beginPath(); ctx.ellipse(sx * r * 0.45, ey + r * 0.14, r * 0.11, r * 0.07, 0, 0, Math.PI * 2); ctx.fill(); } }
+  ctx.restore();
+  // the number stays upright so it's always readable, even when the blob rolls
+  ctx.fillStyle = ink;
+  const v = val(t), fs = Math.max(9, r * (t < 0 ? 0.5 : v >= 10000 ? 0.28 : v >= 1000 ? 0.34 : 0.42));
+  ctx.font = `400 ${fs}px ${FD}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(t < 0 ? '★' : v.toLocaleString(), x, y + r * 0.32);
+}
+function drawHat(x, y, r, t, top) { // upright accessories that grow with tier
+  if (t < 7) return;
+  ctx.save(); ctx.translate(x, y);
+  if (t >= 7 && t < 9) { // sprout
+    ctx.strokeStyle = INK; ctx.lineWidth = Math.max(2, r * 0.04); ctx.fillStyle = '#7BE38A';
+    ctx.beginPath(); ctx.moveTo(0, top); ctx.lineTo(0, top - r * 0.16); ctx.stroke();
+    for (const sx of [-1, 1]) { ctx.beginPath(); ctx.ellipse(sx * r * 0.1, top - r * 0.2, r * 0.11, r * 0.055, sx * 0.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+  } else if (t >= 9 && t < 12) { // crown
+    const cw = r * 0.42, chh = r * 0.22, by = top + 3;
+    ctx.fillStyle = YOLK; ctx.strokeStyle = INK; ctx.lineWidth = Math.max(2.5, r * 0.03); ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(-cw, by); ctx.lineTo(-cw, by - chh); ctx.lineTo(-cw / 2, by - chh * 0.55); ctx.lineTo(0, by - chh * 1.2);
+    ctx.lineTo(cw / 2, by - chh * 0.55); ctx.lineTo(cw, by - chh); ctx.lineTo(cw, by); ctx.closePath(); ctx.fill(); ctx.stroke();
+  } else if (t >= 12) { // halo
+    ctx.strokeStyle = YOLK; ctx.lineWidth = Math.max(4, r * 0.04); ctx.shadowColor = YOLK; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.ellipse(0, top - r * 0.14, r * 0.36, r * 0.09, 0, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0;
+  }
+  ctx.restore();
+}
+function drawBlob(b, mood) {
+  const P = b.pts, n = b.n, cx = b.cx, cy = b.cy;
+  const ex = new Array(n), ey = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const dx = P[i].x - cx, dy = P[i].y - cy, d = Math.hypot(dx, dy) || 1;
+    ex[i] = P[i].x + dx / d * PR; ey[i] = P[i].y + dy / d * PR;
+  }
+  ctx.beginPath();
+  ctx.moveTo((ex[n - 1] + ex[0]) / 2, (ey[n - 1] + ey[0]) / 2);
+  for (let i = 0; i < n; i++) { const j = (i + 1) % n; ctx.quadraticCurveTo(ex[i], ey[i], (ex[i] + ex[j]) / 2, (ey[i] + ey[j]) / 2); }
+  ctx.closePath();
+  blobFill(cx, cy, b.r, b.t, true);
+  if (b.pulse > 0) { ctx.lineWidth = 3 + b.pulse * 6; ctx.strokeStyle = `rgba(255,255,255,${b.pulse * 0.7})`; ctx.stroke(); }
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.beginPath(); ctx.ellipse(cx - b.r * 0.42, cy - b.r * 0.5, b.r * 0.16, b.r * 0.09, -0.6, 0, Math.PI * 2); ctx.fill();
+  drawFace(cx, cy, b.r * b.sc, b.ang, b.t, b.seed, mood);
+  drawHat(cx, cy, b.r * b.sc, b.t, b.top - cy + 2);
+}
+function drawStatic(t, x, y, s, mood) {
+  const r = rad(t) * s;
+  ctx.beginPath(); ctx.arc(x, y, r + PR * s, 0, Math.PI * 2);
+  blobFill(x, y, r, t, true);
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.beginPath(); ctx.ellipse(x - r * 0.42, y - r * 0.5, r * 0.16, r * 0.09, -0.6, 0, Math.PI * 2); ctx.fill();
+  drawFace(x, y, r, 0, t, t * 77, mood);
+  drawHat(x, y, r, t, -(r + PR * s) + 2);
+}
+
+function draw() {
+  ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+  gaze = grab && state === 'play' ? { x: grab.x, y: LY } : null;
+  ctx.fillStyle = TH.bg; ctx.fillRect(0, 0, W, H);
+  if (shake > 0.3) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+  if (zoom) { const z = 1 + 0.04 * zoom.k; ctx.translate(zoom.x, zoom.y); ctx.scale(z, z); ctx.translate(-zoom.x, -zoom.y); }
+  ctx.fillStyle = TH.dot;
+  for (let y = 10; y < H; y += 24) for (let x = (y / 24 % 2) * 12 + 6; x < W; x += 24) { ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fill(); }
+
+  const Lw = M.L, Rw = M.R, inGame = state !== 'menu';
+  // jar body
+  const jg = ctx.createLinearGradient(0, T, 0, B);
+  jg.addColorStop(0, TH.jar); jg.addColorStop(1, hslMix(TH.jar));
+  ctx.fillStyle = jg;
+  ctx.beginPath(); ctx.roundRect(Lw, T - 36, Rw - Lw, B - T + 36, [0, 0, 26, 26]); ctx.fill();
+  // danger line
+  const dl = danger / 180;
+  ctx.setLineDash([10, 8]); ctx.lineWidth = 2.5;
+  ctx.strokeStyle = dl > 0 ? `rgba(255,70,90,${0.45 + 0.55 * Math.abs(Math.sin(frame * (0.15 + dl * 0.3)))})` : 'rgba(255,255,255,0.13)';
+  ctx.beginPath(); ctx.moveTo(Lw + 8, DANGER); ctx.lineTo(Rw - 8, DANGER); ctx.stroke(); ctx.setLineDash([]);
+  if (dl > 0) { const g = ctx.createLinearGradient(0, T - 36, 0, T + 120); g.addColorStop(0, `rgba(255,40,70,${dl * 0.28})`); g.addColorStop(1, 'rgba(255,40,70,0)'); ctx.fillStyle = g; ctx.fillRect(Lw, T - 36, Rw - Lw, 156); }
+
+  // aim preview
+  const showLauncher = inGame && (state === 'play' || state === 'paused' || state === 'replay') && !finished;
+  const carrying = grab && grab.fromTray && !grab.aiming && grab.fy < traySlot(0).y + traySlot(0).h + 16;
+  if (grab && state === 'play' && settings.aim && !carrying) {
+    let [vx, vy] = grabVel(), x = grab.x, y = LY;
+    const col = hsl(pal(tray[grab.i]), 10);
+    if (vx === 0 && vy === 0) { // lazy drop guide: straight down
+      ctx.strokeStyle = col; ctx.globalAlpha = 0.35; ctx.setLineDash([3, 9]); ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x, LY + rad(tray[grab.i])); ctx.lineTo(x, B - 4); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    } else {
+      ctx.fillStyle = col;
+      for (let i = 0; i < 34; i++) {
+        x += vx; y += vy; vy += GRAV; vx *= 0.996;
+        if (x < Lw || x > Rw || y > B) break;
+        if (i % 2 === 0) { ctx.globalAlpha = 1 - i / 34; ctx.beginPath(); ctx.arc(x, y, 3.4, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.globalAlpha = 1;
+      // power meter around finger
+      const pw = Math.hypot(...grabVel()) / 27;
+      ctx.strokeStyle = col; ctx.lineWidth = 4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.arc(grab.fx, grab.fy, 26, -Math.PI / 2, -Math.PI / 2 + pw * Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 0.15; ctx.beginPath(); ctx.arc(grab.fx, grab.fy, 26, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+  }
+
+  const scared = dl > 0.15;
+  if (state === 'menu') ctx.globalAlpha = 0.32;
+  for (const b of blobs) drawBlob(b, scared && b.top < DANGER + 80 ? 'scared' : (b.pulse > 0.2 ? 'happy' : null));
+  ctx.globalAlpha = 1;
+  // while aiming: show which blobs your held blob would merge with
+  if (grab && state === 'play') {
+    const ht = tray[grab.i];
+    ctx.lineWidth = 3; ctx.setLineDash([7, 7]); ctx.lineDashOffset = -frame * 0.6;
+    for (const b of blobs) if (ht < 0 || b.t === ht) {
+      ctx.strokeStyle = hsl(pal(b.t), 18, 0.55 + 0.35 * Math.sin(frame * 0.15));
+      ctx.beginPath(); ctx.arc(b.cx, b.cy, (b.br || b.r) + PR + 6, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.setLineDash([]); ctx.lineDashOffset = 0;
+  }
+  if (popMode && state === 'play') {
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(Lw, T - 36, Rw - Lw, B - T + 36);
+    for (const b of blobs) {
+      const rr = (b.br || b.r) + PR + 4 + Math.sin(frame * 0.2) * 2;
+      ctx.strokeStyle = '#ff5468'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(b.cx, b.cy, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(b.cx - 8, b.cy); ctx.lineTo(b.cx + 8, b.cy); ctx.moveTo(b.cx, b.cy - 8); ctx.lineTo(b.cx, b.cy + 8); ctx.stroke();
+    }
+  }
+
+  for (const r of rings) {
+    const k = 1 - r.life / 22;
+    ctx.strokeStyle = hsl(pal(r.t), 20, (1 - k) * 0.8); ctx.lineWidth = 4 * (1 - k) + 1;
+    ctx.beginPath(); ctx.arc(r.x, r.y, r.r * (1 + k * 0.8), 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // jar rim
+  ctx.lineWidth = 5; ctx.strokeStyle = TH.rim; ctx.lineJoin = 'round'; ctx.globalAlpha = 0.85;
+  ctx.beginPath(); ctx.moveTo(Lw - 3, T - 40); ctx.lineTo(Lw - 3, B - 23); ctx.quadraticCurveTo(Lw - 3, B + 3, Lw + 23, B + 3);
+  ctx.lineTo(Rw - 23, B + 3); ctx.quadraticCurveTo(Rw + 3, B + 3, Rw + 3, B - 23); ctx.lineTo(Rw + 3, T - 40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(Lw - 12, T - 40); ctx.lineTo(Lw + 8, T - 40); ctx.moveTo(Rw - 8, T - 40); ctx.lineTo(Rw + 12, T - 40); ctx.stroke();
+  ctx.globalAlpha = 1;
+  // glass shine
+  { const sh = ctx.createLinearGradient(Lw, 0, Rw, 0);
+    sh.addColorStop(0, 'rgba(255,255,255,0.05)'); sh.addColorStop(0.06, 'rgba(255,255,255,0.0)'); sh.addColorStop(0.9, 'rgba(255,255,255,0)'); sh.addColorStop(0.97, 'rgba(255,255,255,0.04)'); sh.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sh; ctx.fillRect(Lw, T - 36, Rw - Lw, B - T + 36);
+    const fl = ctx.createLinearGradient(0, B - 70, 0, B); fl.addColorStop(0, 'rgba(0,0,0,0)'); fl.addColorStop(1, 'rgba(0,0,0,0.22)');
+    ctx.fillStyle = fl; ctx.fillRect(Lw + 4, B - 70, Rw - Lw - 8, 70);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.beginPath(); ctx.roundRect(Lw + 12, T - 26, 8, (B - T) * 0.55, 4); ctx.fill(); }
+
+  // launcher
+  if (showLauncher && tray && state !== 'replay') {
+    if (grab) {
+      const t = tray[grab.i], wob = 1 + Math.sin(frame * (grab.aiming ? 0.5 : 0.15)) * (grab.aiming ? 0.04 : 0.02);
+      const k = frame - (grab.t0 || 0), st = 1 + 0.24 * Math.exp(-k / 7) * Math.cos(k * 0.55);
+      const sl = traySlot(0), carry = grab.fromTray && !grab.aiming && grab.fy < sl.y + sl.h + 16;
+      if (carry) { /* drawn on top of the shelf in the HUD pass */ } else {
+        ctx.save(); ctx.translate(grab.x, LY); ctx.scale(1 / Math.sqrt(st), st);
+        drawStatic(t, 0, 0, wob, scared ? 'scared' : 'happy'); ctx.restore();
+      }
+    } else if (hoverOK) {
+      ctx.globalAlpha = 0.28; drawStatic(tray[sel], launchX(), LY, 1, null); ctx.globalAlpha = 1;
+    }
+  }
+
+  for (const p of parts) {
+    if (state === 'menu' && !p.sq) continue;
+    ctx.globalAlpha = Math.min(1, p.life / 20); ctx.fillStyle = hsl(pal(Math.max(0, p.t)), 8);
+    if (p.sq) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillRect(-p.s, -p.s * 0.5, p.s * 2, p.s); ctx.restore(); }
+    else { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const p of pops) {
+    if (state === 'menu') continue;
+    ctx.globalAlpha = Math.min(1, p.life / 20); ctx.font = `400 22px ${FD}`;
+    ctx.lineWidth = 5; ctx.strokeStyle = INK; ctx.strokeText(p.txt, p.x, p.y); ctx.fillStyle = hsl(pal(p.t), 10); ctx.fillText(p.txt, p.x, p.y);
+  }
+  ctx.globalAlpha = 1;
+
+  if (dl > 0 && inGame) {
+    const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.75);
+    vg.addColorStop(0, 'rgba(255,30,60,0)'); vg.addColorStop(1, `rgba(255,30,60,${dl * 0.35 * (0.7 + 0.3 * Math.sin(frame * 0.18))})`);
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+  if (state === 'menu') drawMascot();
+  if (!inGame || !tray) return;
+  const mid = W / 2;
+  const outlineText = (txt, x, y, size, fill, sw = 6) => {
+    ctx.font = `400 ${size}px ${FD}`; ctx.lineJoin = 'round'; ctx.lineWidth = sw; ctx.strokeStyle = INK;
+    ctx.strokeText(txt, x, y); ctx.fillStyle = fill; ctx.fillText(txt, x, y);
+  };
+
+  // ---- shelf: four blobs on a rack, all grabbable; they slide, swap and drop in ----
+  const s0 = traySlot(0), sN = traySlot(TRAY_N - 1), plankY = s0.y + s0.h;
+  ctx.fillStyle = WELL; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(s0.x - 16, plankY, sN.x + sN.w - s0.x + 32, 12, 6); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,241,220,0.1)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s0.x - 6, plankY + 4); ctx.lineTo(sN.x + sN.w + 6, plankY + 4); ctx.stroke();
+  const overSlot = grab && grab.fromTray && !grab.aiming ? slotAt(grab.fx, grab.fy) : -1;
+  const trayR = t => t < 0 ? 25 : 18 + 1.5 * Math.min(t, 8);
+  const liveIds = new Set(trayIds);
+  for (const k of tv.keys()) if (!liveIds.has(k)) tv.delete(k);
+  for (let i = 0; i < TRAY_N; i++) {
+    const s = traySlot(i), id = trayIds[i], t = tray[i];
+    if (t == null) continue;
+    const tx = s.x + s.w / 2;
+    let v = tv.get(id);
+    if (!v) { v = tvInit ? { x: tx, s: 1, oy: settings.calm ? 0 : -130, d: i * 5 } : fusedIds.has(id) ? { x: tx, s: 1.5, oy: 0, d: 0 } : { x: W + 34, s: 1, oy: 0, d: 0 }; tv.set(id, v); fusedIds.delete(id); }
+    if (v.d > 0) { v.d--; continue; }
+    v.x += (tx - v.x) * 0.2; v.s += (1 - v.s) * 0.16; v.oy *= 0.78; if (Math.abs(v.oy) < 0.5) v.oy = 0;
+    const on = i === sel, held = grab && grab.i === i, target = overSlot === i && !held;
+    const r = trayR(t), sc = r / rad(t);
+    const hover = !grab && !hoverOK && Math.abs(lx - v.x) < 38 && lastPY < plankY + 12;
+    const lift = (on ? 4 : 0) + (hover ? 4 : 0) + (target ? 8 : 0), base = plankY - 1;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.ellipse(v.x, plankY + 1, r * 0.78, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+    if (held) {
+      ctx.strokeStyle = 'rgba(255,241,220,0.28)'; ctx.setLineDash([4, 6]); ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(v.x, base - r - PR, r + PR, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+      continue;
+    }
+    if (target) {
+      ctx.strokeStyle = swapOK ? YOLK : 'rgba(255,241,220,0.3)'; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.lineDashOffset = -frame * 0.5;
+      ctx.beginPath(); ctx.arc(v.x, base - r - PR - lift, r + PR + 6, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+    }
+    const br = settings.calm ? 0 : Math.sin(frame * 0.06 + i * 1.3) * 0.025;   // gentle breathing, anchored at the bottom
+    ctx.save(); ctx.translate(v.x, base - lift + v.oy); ctx.scale((1 + br) * v.s, (1 - br) * v.s);
+    drawStatic(t, 0, -r - PR, sc, on || target ? 'happy' : null); ctx.restore();
+  }
+  tvInit = false;
+  if (carrying) { // carrying along the shelf to swap: the blob rides under your finger, above the rack
+    const t = tray[grab.i], k = frame - (grab.t0 || 0), st = 1 + 0.24 * Math.exp(-k / 7) * Math.cos(k * 0.55);
+    ctx.save(); ctx.translate(grab.fx, grab.fy - 10); ctx.scale(1 / Math.sqrt(st), st);
+    drawStatic(t, 0, 0, trayR(t) / rad(t) * 1.1, 'happy'); ctx.restore();
+  }
+  // the next blob, waiting at the end of the shelf
+  { const px = W - 27, py = plankY - 14, t = nextUp;
+    ctx.globalAlpha = 0.65; drawStatic(t, px, py, 11 / rad(t), null); ctx.globalAlpha = 1;
+    ctx.font = `800 10px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.45)'; ctx.textAlign = 'center'; ctx.fillText('next', px, plankY + 12); }
+  // swap token at the other end
+  { const qx = 27, qy = plankY - 12;
+    ctx.fillStyle = swapOK ? YOLK : WELL; ctx.strokeStyle = INK; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(qx, qy, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = swapOK ? INK : 'rgba(255,241,220,0.35)'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(qx - 5, qy - 3); ctx.lineTo(qx + 5, qy - 3); ctx.lineTo(qx + 2, qy - 6); ctx.moveTo(qx + 5, qy + 3); ctx.lineTo(qx - 5, qy + 3); ctx.lineTo(qx - 2, qy + 6); ctx.stroke();
+    ctx.font = `800 10px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.45)'; ctx.fillText('swap', qx, plankY + 12); }
+  if (overSlot >= 0 && grab && overSlot !== grab.i) {
+    ctx.font = `800 13px ${FONT}`; ctx.fillStyle = swapOK ? YOLK : MUTE;
+    ctx.fillText(swapOK ? 'Let go to swap' : 'Swap again after your next throw', mid, T + 34);
+  }
+
+  // ---- score, centred ----
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const best = (records[recKey()] || [])[0]?.s || 0;
+  const big = M.level ? String(Math.max(0, M.level.n - thrown)) : M.target ? fmtT(gf) : Math.round(dispScore).toLocaleString();
+  if (score > dispScore + 0.5 && scoreBump < 0.5) scoreBump = 1;
+  ctx.save(); ctx.translate(mid, 52); ctx.scale(1 + scoreBump * 0.1, 1 + scoreBump * 0.1);
+  outlineText(big, 0, 0, 38, CREAM, 7); ctx.restore();
+  ctx.font = `700 13px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.55)';
+  const sub = M.level ? (M.level.n - thrown === 1 ? 'throw left' : 'throws left') + (mod ? `, ${mod.name.toLowerCase()}` : '') : mod ? `${mod.name}, ${Math.ceil((mod.until - gf) / 60)}s left` : M.target ? 'Make a 1024 blob' : M.daily ? (best ? `Today’s best ${Math.max(best, score).toLocaleString()}` : 'Daily jar')
+    : best ? `Best ${Math.max(best, replaying ? 0 : score).toLocaleString()}` : M.name;
+  if (mod) ctx.fillStyle = '#FF9A5C';
+  ctx.fillText(sub, mid, 72);
+
+  // ---- next goal, top right ----
+  const gt = M.level ? (M.level.g === 'make' ? Math.round(Math.log2(M.level.v)) : -9) : M.target ? M.target : Math.min(maxT(), maxTier + 1);
+  if (M.level && gt < 0) {
+    const L = M.level, pr = Math.min(levelProg(), L.v), sh = v => v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0) + 'k' : v;
+    ctx.font = `400 19px ${FD}`; ctx.fillStyle = CREAM;
+    ctx.fillText(L.g === 'combo' ? `×${pr}/${L.v}` : `${sh(pr)}/${sh(L.v)}`, W - 46, 50);
+    ctx.font = `800 11px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.5)'; ctx.fillText(L.g === 'score' ? 'Points' : L.g === 'combo' ? 'Combo' : 'Merges', W - 46, 70);
+  } else if (M.level) {
+    drawStatic(gt, W - 42, 42, 15 / rad(gt), null);
+    ctx.font = `800 11px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.5)'; ctx.fillText('Goal', W - 42, 74);
+  } else if (gt >= 1) {
+    const gsc = 15 / rad(gt);
+    ctx.globalAlpha = 0.9; drawStatic(gt, W - 42, 42, gsc, null); ctx.globalAlpha = 1;
+    ctx.font = `800 11px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.5)'; ctx.fillText(M.base === 2 ? BLOB_NAMES[gt][0] : 'Next', W - 42, 74);
+  }
+
+  // ---- bottom bar: power-ups in the thumb zone ----
+  const drawPow = (r, col, kind) => {
+    const ready = kind === 'retry' || charges > 0, act = kind === 'pop' && popMode, down = act ? 4 : 0, fl = kind === 'retry' ? 0 : chargeFlash;
+    ctx.globalAlpha = ready ? 1 : 0.42;
+    ctx.fillStyle = INK; ctx.beginPath(); ctx.roundRect(r.x, r.y + 5, r.w, r.h, 18); ctx.fill();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(r.x, r.y + down, r.w, r.h, 18); ctx.fill();
+    ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+    if (ready && fl > 0.05) { ctx.strokeStyle = `rgba(255,241,220,${fl})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.roundRect(r.x - 5, r.y - 5 + down, r.w + 10, r.h + 10, 22); ctx.stroke(); }
+    const ix = r.x + 30, iy = r.y + r.h / 2 + down;
+    ctx.strokeStyle = INK; ctx.fillStyle = CREAM; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    if (kind === 'retry') {
+      ctx.beginPath(); ctx.arc(ix, iy, 10, -Math.PI * 0.2, Math.PI * 1.45); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ix + 10, iy - 11); ctx.lineTo(ix + 9, iy - 3); ctx.lineTo(ix + 2, iy - 6); ctx.stroke();
+    } else if (kind === 'shake') {
+      ctx.beginPath(); ctx.roundRect(ix - 8, iy - 10, 16, 20, 5); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ix - 14, iy - 6); ctx.quadraticCurveTo(ix - 18, iy, ix - 14, iy + 6);
+      ctx.moveTo(ix + 14, iy - 6); ctx.quadraticCurveTo(ix + 18, iy, ix + 14, iy + 6); ctx.stroke();
+    } else {
+      ctx.beginPath();
+      for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? 6 : 13; ctx[k ? 'lineTo' : 'moveTo'](ix + Math.cos(a) * rr, iy + Math.sin(a) * rr); }
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = `400 19px ${FD}`; ctx.fillStyle = INK;
+    ctx.fillText(kind === 'shake' ? 'Shake' : kind === 'retry' ? 'Retry' : 'Pop', r.x + 52, iy + 1);
+    ctx.globalAlpha = 1; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  };
+  if (M.level) {
+    const L = M.level, y0 = POW.shake.y + POW.shake.h / 2 + 2, st = thrown <= L.par[0] ? 3 : thrown <= L.par[1] ? 2 : 1;
+    const star = (x, y, rr, on) => {
+      ctx.beginPath();
+      for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, q = k % 2 ? rr * 0.45 : rr; ctx[k ? 'lineTo' : 'moveTo'](x + Math.cos(a) * q, y + Math.sin(a) * q); }
+      ctx.closePath(); ctx.fillStyle = on ? YOLK : WELL; ctx.fill(); ctx.strokeStyle = INK; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+    };
+    for (let k = 0; k < 3; k++) star(44 + k * 36, y0, k === 1 ? 17 : 14, k < st);
+    ctx.font = `800 12px ${FONT}`; ctx.fillStyle = MUTE; ctx.textAlign = 'center';
+    ctx.fillText(st > 1 ? `${st} stars if you finish by throw ${L.par[3 - st]}` : 'Finish the goal for 1 star', 236, y0 + 4);
+    drawPow(POW.pop, CHERRY, 'retry');
+  } else {
+    drawPow(POW.shake, SKY, 'shake');
+    drawPow(POW.pop, CHERRY, 'pop');
+  }
+  // charge pips: full = a charge, the next one fills like a pie as you merge
+  for (let k = 0; k < (M.level ? 0 : 3); k++) {
+    const px = mid - 34 + k * 34, py = POW.shake.y + POW.shake.h / 2 + 2;
+    ctx.fillStyle = WELL; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(px, py, 12, 0, Math.PI * 2); ctx.fill();
+    if (k < charges) { ctx.fillStyle = YOLK; ctx.fill(); }
+    else if (k === charges && energy > 0) {
+      ctx.fillStyle = YOLK; ctx.beginPath(); ctx.moveTo(px, py); ctx.arc(px, py, 12, -Math.PI / 2, -Math.PI / 2 + energy * Math.PI * 2); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(px, py, 12, 0, Math.PI * 2);
+    }
+    ctx.stroke();
+  }
+  if (hint) { ctx.globalAlpha = Math.min(1, hint.life / 20); ctx.font = `800 13px ${FONT}`; ctx.fillStyle = CREAM; ctx.fillText(hint.txt, mid, POW.shake.y - 12); ctx.globalAlpha = 1; }
+
+  // ---- above the jar: combo, or pop instructions ----
+  if (popMode) { ctx.font = `800 16px ${FONT}`; ctx.fillStyle = CHERRY; ctx.fillText('Tap a blob to pop it', mid, T + 40); }
+  else if (gf - lastMerge < 75 && combo > 1) {
+    const k = 1 + Math.max(0, 1 - (gf - lastMerge) / 12) * 0.45;
+    ctx.save(); ctx.translate(mid, T + 42); ctx.scale(k, k); outlineText('×' + combo + ' combo', 0, 0, 24, YOLK, 6); ctx.restore();
+    const left = 1 - (gf - lastMerge) / 75;   // time left to keep the combo going
+    ctx.fillStyle = INK; ctx.beginPath(); ctx.roundRect(mid - 48, T + 52, 96, 8, 4); ctx.fill();
+    ctx.fillStyle = YOLK; ctx.beginPath(); ctx.roundRect(mid - 46, T + 54, Math.max(4, 92 * left), 4, 2); ctx.fill();
+  }
+
+  // ---- danger countdown ----
+  if (danger > 0 && !finished && M.over) {
+    const cx = (Lw + Rw) / 2, cy = DANGER + 112, k = Math.max(0, (180 - danger) / 180), pulse = 1 + 0.07 * Math.sin(frame * 0.3);
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(pulse, pulse);
+    ctx.fillStyle = CHERRY; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = CREAM; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, 0, 18, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+    ctx.textBaseline = 'middle'; ctx.font = `400 19px ${FD}`; ctx.fillStyle = INK; ctx.fillText(Math.ceil((180 - danger) / 60), 0, 1);
+    ctx.restore(); ctx.textBaseline = 'alphabetic';
+    ctx.font = `800 13px ${FONT}`; ctx.fillStyle = CHERRY; ctx.fillText('Too full', cx, cy + 44);
+  }
+
+  // ---- first-time tutorial ----
+  if (state === 'play' && !replaying && tut < 2 && !finished) {
+    const jm = (Lw + Rw) / 2;
+    if (tut === 0) {
+      const s = traySlot(sel), p = (frame % 170) / 170, ez = k => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
+      const sx0 = s.x + s.w / 2, sy0 = plankY - 28, tx = jm + 70;
+      let hx = sx0, hy = sy0, bx = sx0, by = sy0;
+      if (p >= 0.15 && p < 0.45) { const e = ez((p - 0.15) / 0.3); hx = bx = sx0 + (tx - sx0) * e; hy = by = sy0 + (LY - sy0) * e; }
+      else if (p >= 0.45) { hx = bx = tx; by = LY; hy = LY + (520 - LY) * ez((p - 0.45) / 0.35); }
+      const a = p > 0.85 ? 1 - (p - 0.85) / 0.15 : 1, pressing = p >= 0.12 && p < 0.82;
+      ctx.globalAlpha = 0.55 * a; if (p >= 0.15 && tray[sel] != null) drawStatic(tray[sel], bx, by, 1, 'happy');
+      if (p >= 0.45) { ctx.strokeStyle = CREAM; ctx.setLineDash([3, 9]); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(bx, by + 22); ctx.lineTo(hx, hy - 18); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.globalAlpha = a;
+      ctx.fillStyle = 'rgba(255,241,220,0.9)'; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(hx, hy, pressing ? 13 : 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (pressing) { ctx.strokeStyle = 'rgba(255,241,220,0.5)'; ctx.beginPath(); ctx.arc(hx, hy, 22 + (frame % 30) / 3, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.globalAlpha = 1; ctx.font = `800 18px ${FONT}`; ctx.fillStyle = CREAM;
+      ctx.fillText(p < 0.45 ? 'Grab any blob from the shelf' : 'Pull down to throw, or just let go', jm, 600);
+      ctx.font = `700 14px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.55)'; ctx.fillText('Letting go gently drops it softly', jm, 624);
+    } else {
+      ctx.font = `800 17px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.85)';
+      ctx.fillText(M.base === 3 ? 'Three matching blobs merge' : 'Matching numbers merge and double', jm, 600);
+      ctx.font = `700 14px ${FONT}`; ctx.fillStyle = 'rgba(255,241,220,0.55)';
+      ctx.fillText('Drag a shelf blob onto another to swap them', jm, 624);
+    }
+  }
+  if (discover) {
+    const t = discover.t, k = Math.min(1, (2800 - discover.ms) / 260), e = 1 - Math.pow(1 - k, 3), a = Math.min(1, discover.ms / 300);
+    const w = 336, h = 112, cy = T + 160;
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(mid, cy); ctx.scale(0.7 + 0.3 * e, 0.7 + 0.3 * e); ctx.rotate(-0.02);
+    ctx.fillStyle = INK; ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2 + 6, w, h, 24); ctx.fill();
+    ctx.fillStyle = WELL; ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 24); ctx.fill(); ctx.stroke();
+    drawStatic(t, -w / 2 + 58, 6, 34 / rad(t), 'happy');
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = `800 12px ${FONT}`; ctx.fillStyle = MINT; ctx.fillText('New blob discovered', -w / 2 + 112, -20);
+    ctx.font = `400 28px ${FD}`; ctx.fillStyle = CREAM; ctx.fillText(BLOB_NAMES[t][0], -w / 2 + 112, 12);
+    ctx.font = `700 13px ${FONT}`; ctx.fillStyle = MUTE; ctx.fillText(BLOB_NAMES[t][1], -w / 2 + 112, 34);
+    ctx.restore(); ctx.textAlign = 'center';
+  }
+  if (banner) {
+    const k = 1 - banner.life / 110, sc = k < 0.12 ? k / 0.12 * 1.2 : 1;
+    ctx.save(); ctx.translate(mid, 430); ctx.rotate(-0.05); ctx.scale(sc, sc); ctx.globalAlpha = Math.min(1, banner.life / 25);
+    ctx.textBaseline = 'middle'; ctx.font = `400 54px ${FD}`; const fit = Math.min(1, 410 / ctx.measureText(banner.txt).width); ctx.scale(fit, fit); outlineText(banner.txt, 0, 0, 54, YOLK, 10);
+    ctx.restore(); ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+  }
+}
+
+let mascot = { sq: 0, say: null, sayT: 0, x: W / 2, y: 520, r: 60 }, menuGaze = null;
+const MASCOT_LINES = ['Squish me again.', 'Got any spare Pips?', 'I was a Pip once, you know.', 'Mind the dashed line.', 'Swap us around if you need to.', 'Try the Daily jar today!', 'Bigger is better.'];
+function mascotTier() { let t = 3; for (const x of seen) if (x > t && x < BLOB_NAMES.length) t = x; return t; }
+function layoutMascot() {
+  const tag = $('#menu .tag'), foot = $('#menu .foot'), wr = wrap.getBoundingClientRect();
+  if (!tag || !foot) return;
+  const top = (tag.getBoundingClientRect().bottom - wr.top) / scale, bot = (foot.getBoundingClientRect().top - wr.top) / scale;
+  mascot.y = (top + bot) / 2 + 6; mascot.r = Math.max(26, Math.min(64, (bot - top) / 2 - 34));
+}
+function drawMascot() {
+  if (!$('#menu').classList.contains('on') || $$('.sheet.on').length) return;
+  const t = mascotTier(), r = mascot.r, sq = mascot.sq;
+  mascot.sq *= 0.86;
+  const bob = settings.calm ? 0 : Math.sin(frame * 0.05) * 4, w = 1 + sq * 0.35, h = 1 - sq * 0.3;
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(mascot.x, mascot.y + r + PR + 12, r * 0.8 * w, 7, 0, 0, Math.PI * 2); ctx.fill();
+  gaze = menuGaze;
+  ctx.save(); ctx.translate(mascot.x, mascot.y + r + PR + bob); ctx.scale(w, h);
+  drawStatic(t, 0, -r - PR, r / rad(t), sq > 0.2 ? 'happy' : null); ctx.restore();
+  gaze = null;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.font = `400 20px ${FD}`; ctx.lineWidth = 5; ctx.strokeStyle = INK; ctx.lineJoin = 'round';
+  const name = BLOB_NAMES[t][0], ny = mascot.y + r + PR + 42;
+  ctx.strokeText(name, mascot.x, ny); ctx.fillStyle = CREAM; ctx.fillText(name, mascot.x, ny);
+  if (mascot.say && frame - mascot.sayT < 170) {
+    const a = Math.min(1, (170 - (frame - mascot.sayT)) / 20);
+    ctx.globalAlpha = a; ctx.font = `800 14px ${FONT}`;
+    const tw = ctx.measureText(mascot.say).width + 28, bx = Math.min(W - tw / 2 - 12, Math.max(tw / 2 + 12, mascot.x + r * 0.6)), by = mascot.y - r - 34;
+    ctx.fillStyle = CREAM; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.roundRect(bx - tw / 2, by - 18, tw, 34, 14); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx - 14, by + 15); ctx.lineTo(bx - 22, by + 28); ctx.lineTo(bx - 2, by + 15); ctx.fillStyle = CREAM; ctx.fill(); ctx.stroke();
+    ctx.fillStyle = CREAM; ctx.fillRect(bx - 16, by + 12, 16, 4);
+    ctx.fillStyle = INK; ctx.textBaseline = 'middle'; ctx.fillText(mascot.say, bx, by); ctx.textBaseline = 'alphabetic';
+    ctx.globalAlpha = 1;
+  }
+}
+$('#menu').addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); menuGaze = { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; });
+$('#menu').addEventListener('pointerdown', e => {
+  if (e.target.closest('button')) return;
+  const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / scale, y = (e.clientY - r.top) / scale;
+  menuGaze = { x, y };
+  if (Math.hypot(x - mascot.x, y - mascot.y) > mascot.r + 24) return;
+  const t = mascotTier();
+  mascot.sq = 1; mascot.sayT = frame;
+  mascot.say = Math.random() < 0.35 ? `Hi, I'm ${BLOB_NAMES[t][0]}!` : MASCOT_LINES[(Math.random() * MASCOT_LINES.length) | 0];
+  sound(t, 'merge'); if (settings.haptic && navigator.vibrate) navigator.vibrate(12);
+});
+addEventListener('resize', () => setTimeout(layoutMascot, 50));
+function hslMix(hex) { // slightly lighter bottom of jar
+  const n = parseInt(hex.slice(1), 16), f = c => Math.min(255, c + 8);
+  return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+}
+
+// ---------- main loop ----------
+let acc = 0, lt = performance.now();
+goMenu();
+Promise.race([Promise.all([document.fonts.load('400 20px "Bagel Fat One"'), document.fonts.load('800 14px Figtree')]), new Promise(r => setTimeout(r, 1600))])
+  .then(() => setTimeout(() => { $('#splash').classList.add('gone'); layoutMascot(); squishLogo(); setTimeout(() => $('#splash').remove(), 500); }, 250));
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+function loop(now) {
+  const dt = Math.min(100, now - lt); lt = now;
+  if (discover && (discover.ms -= dt) <= 0) discover = null;
+  acc += dt * (discover && discover.ms > 2000 ? 0.18 : 1);
+  while (acc >= 1000 / 60) {
+    acc -= 1000 / 60;
+    if (state === 'menu') { demoAI(); step(); }
+    else if (state === 'play' && !finished) step();
+    else if (state === 'replay' && !finished) for (let i = 0; i < speed && !finished; i++) step();
+    fxStep();
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+setInterval(saveGame, 5000);
+</script>
+</body>
+</html>

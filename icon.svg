@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#34245A"/><stop offset=".6" stop-color="#1E1433"/><stop offset="1" stop-color="#140C22"/>
+    </radialGradient>
+    <radialGradient id="yolk" cx="36%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#FFE9A6"/><stop offset=".55" stop-color="#FFC83D"/><stop offset="1" stop-color="#F0A21E"/>
+    </radialGradient>
+    <radialGradient id="cherry" cx="36%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#FFB3BF"/><stop offset=".55" stop-color="#FF5D73"/><stop offset="1" stop-color="#D93A55"/>
+    </radialGradient>
+    <radialGradient id="sky" cx="36%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#C9EEFF"/><stop offset=".55" stop-color="#63C7FF"/><stop offset="1" stop-color="#3A9FE0"/>
+    </radialGradient>
+    <clipPath id="glass"><path d="M146 176 V376 Q146 420 190 420 H322 Q366 420 366 376 V176 Z"/></clipPath>
+  </defs>
+
+  <!-- full-bleed background: phones apply their own rounded mask -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(256 250) scale(1.1) translate(-256 -250)">
+  <g fill="#FFF1DC" opacity=".08"><circle cx="70" cy="90" r="6"/><circle cx="440" cy="120" r="5"/><circle cx="420" cy="440" r="7"/><circle cx="96" cy="430" r="4"/></g>
+
+  <!-- jar glass -->
+  <path d="M146 176 V376 Q146 420 190 420 H322 Q366 420 366 376 V176 Z" fill="#FFFFFF" fill-opacity=".06"/>
+
+  <!-- blobs inside the jar -->
+  <g clip-path="url(#glass)" stroke="#12081F" stroke-width="9" stroke-linejoin="round">
+    <circle cx="308" cy="372" r="52" fill="url(#cherry)"/>
+    <circle cx="214" cy="344" r="76" fill="url(#yolk)"/>
+    <circle cx="318" cy="276" r="40" fill="url(#sky)"/>
+  </g>
+  <!-- faces -->
+  <g fill="#12081F">
+    <circle cx="190" cy="332" r="9"/><circle cx="238" cy="332" r="9"/>
+    <circle cx="296" cy="368" r="6.5"/><circle cx="326" cy="368" r="6.5"/>
+    <circle cx="306" cy="272" r="5.5"/><circle cx="331" cy="272" r="5.5"/>
+  </g>
+  <g fill="#FFFFFF">
+    <circle cx="187" cy="329" r="3.2"/><circle cx="235" cy="329" r="3.2"/>
+    <circle cx="294" cy="366" r="2.4"/><circle cx="324" cy="366" r="2.4"/>
+    <circle cx="304" cy="270" r="2"/><circle cx="329" cy="270" r="2"/>
+  </g>
+  <g fill="#FF3D7A" opacity=".32">
+    <ellipse cx="172" cy="352" rx="11" ry="7"/><ellipse cx="256" cy="352" rx="11" ry="7"/>
+  </g>
+  <path d="M203 356 q11 10 22 0" fill="none" stroke="#12081F" stroke-width="6" stroke-linecap="round"/>
+  <!-- glossy highlights -->
+  <g fill="#FFFFFF" opacity=".55">
+    <ellipse cx="178" cy="298" rx="20" ry="10" transform="rotate(-28 178 298)"/>
+    <ellipse cx="290" cy="340" rx="12" ry="6" transform="rotate(-28 290 340)"/>
+    <ellipse cx="304" cy="255" rx="9" ry="5" transform="rotate(-28 304 255)"/>
+  </g>
+  <!-- crown on the big blob -->
+  <path d="M184 276 L184 248 L199 262 L214 238 L229 262 L244 248 L244 276 Z" fill="#FFC83D" stroke="#12081F" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- jar outline and rim, drawn on top -->
+  <path d="M146 176 V376 Q146 420 190 420 H322 Q366 420 366 376 V176" fill="none" stroke="#E9DCFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M128 172 H166 M346 172 H384" stroke="#E9DCFF" stroke-width="13" stroke-linecap="round"/>
+  <rect x="164" y="196" width="10" height="120" rx="5" fill="#FFFFFF" opacity=".12"/>
+
+  <!-- a blob falling in -->
+  <circle cx="256" cy="118" r="30" fill="url(#cherry)" stroke="#12081F" stroke-width="8"/>
+  <circle cx="247" cy="116" r="4.5" fill="#12081F"/><circle cx="265" cy="116" r="4.5" fill="#12081F"/>
+  <ellipse cx="245" cy="104" rx="7" ry="4" fill="#FFFFFF" opacity=".55" transform="rotate(-28 245 104)"/>
+  <path d="M232 70 q-6 -12 0 -22 M256 66 v-22 M280 70 q6 -12 0 -22" fill="none" stroke="#FFF1DC" stroke-width="6" stroke-linecap="round" opacity=".45"/>
+  </g>
+</svg>
