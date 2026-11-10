@@ -1,0 +1,100 @@
+<!doctype html>
+<!-- Open Graph card template, rendered to /og/*.png by tools/og/render.mjs. Pick a card with ?card=how-to-play|game-modes|faq -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+@font-face{font-family:"Bagel Fat One";src:url(../../fonts/bagel-fat-one-latin.woff2) format("woff2")}
+@font-face{font-family:Figtree;font-weight:300 900;src:url(../../fonts/figtree-latin.woff2) format("woff2")}
+:root{--bg:#170F26;--ink:#12081F;--cream:#FFF1DC;--mute:#B8A8D8;--sheet:#251A3D;--well:#33264F;
+  --yolk:#FFC83D;--sky:#63C7FF;--grape:#A98BFF;--cherry:#FF5D73;--mint:#5FE3C0;--d:"Bagel Fat One";--b:Figtree}
+*{box-sizing:border-box}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden}
+body{background:radial-gradient(900px 520px at 78% 40%,#33215a 0%,transparent 62%),radial-gradient(700px 500px at 0% 100%,#22163a 0%,transparent 60%),var(--bg);
+  color:var(--cream);font-family:var(--b);position:relative}
+body::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,241,220,.05) 1.5px,transparent 1.6px);background-size:26px 26px}
+.card{display:none;position:absolute;inset:0}
+.card.on{display:block}
+.logo{display:flex;font:400 64px/1 var(--d);letter-spacing:-.01em}
+.logo span{color:var(--c);-webkit-text-stroke:9px var(--ink);paint-order:stroke fill;text-shadow:0 6px 0 var(--ink)}
+.left{position:absolute;left:80px;top:74px;width:600px}
+.kicker{margin-top:34px;font:800 22px/1 var(--b);letter-spacing:.14em;text-transform:uppercase;color:var(--yolk)}
+h1{font:400 76px/1 var(--d);margin:14px 0 0;letter-spacing:-.01em}
+.sub{margin-top:18px;font:700 27px/1.3 var(--b);color:var(--mute);max-width:560px}
+.url{position:absolute;left:80px;bottom:52px;font:800 22px/1 var(--b);color:var(--mute);display:flex;gap:12px;align-items:center}
+.url b{color:var(--cream)}
+.phone{position:absolute;border-radius:34px;border:5px solid var(--ink);box-shadow:0 14px 0 var(--ink),0 40px 80px rgba(0,0,0,.5);overflow:hidden;background:var(--sheet)}
+.phone img{display:block;width:100%}
+.steps{display:flex;flex-direction:column;gap:14px;margin-top:30px}
+.step{display:flex;align-items:center;gap:16px;font:800 28px/1.1 var(--b)}
+.step i{flex:none;width:50px;height:50px;border-radius:50%;background:var(--c);border:4px solid var(--ink);display:grid;place-items:center;
+  font:400 24px/1 var(--d);font-style:normal;color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.step small{display:block;font:700 19px/1.2 var(--b);color:var(--mute);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px;max-width:600px}
+.chip{background:var(--c);color:var(--ink);border:4px solid var(--ink);border-radius:999px;padding:10px 20px;font:400 26px/1 var(--d);box-shadow:0 5px 0 var(--ink)}
+.blob{position:absolute;border-radius:50%;border:4px solid var(--ink);display:grid;place-items:center;font:400 var(--fs,28px)/1 var(--d);color:var(--ink);
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.55) 0 12%,transparent 13%),radial-gradient(circle at 50% 60%,var(--c) 55%,color-mix(in srgb,var(--c) 70%,#000) 100%);
+  box-shadow:0 6px 0 var(--ink)}
+.label{position:absolute;font:400 26px/1 var(--d);color:var(--cream);-webkit-text-stroke:6px var(--ink);paint-order:stroke fill;text-align:center;width:220px}
+</style>
+</head>
+<body>
+<!-- How to play -->
+<section class="card" id="how-to-play">
+  <div class="left">
+    <div class="logo"><span style="--c:#FF8FA8">p</span><span style="--c:#FFC83D">l</span><span style="--c:#7BE38A">o</span><span style="--c:#63C7FF">p</span><span style="--c:#A98BFF">j</span><span style="--c:#FF9A5C">a</span><span style="--c:#FF5D73">r</span></div>
+    <h1 style="margin-top:30px">How to play</h1>
+    <div class="steps">
+      <div class="step"><i style="--c:var(--yolk)">1</i><div>Grab a blob<small>Pick any blob on the shelf</small></div></div>
+      <div class="step"><i style="--c:var(--sky)">2</i><div>Fling it in<small>Pull down to throw harder</small></div></div>
+      <div class="step"><i style="--c:var(--mint)">3</i><div>Merge matches<small>Same numbers double: 64 + 64 = 128</small></div></div>
+    </div>
+  </div>
+  <div class="phone" style="right:120px;top:52px;width:300px;transform:rotate(4deg)"><img src="../../img/play.webp" alt=""></div>
+  <div class="blob" style="--c:#7BE38A;--fs:30px;width:92px;height:92px;right:452px;top:404px">64</div>
+  <div class="blob" style="--c:#7BE38A;--fs:30px;width:92px;height:92px;right:420px;top:488px">64</div>
+  <div class="blob" style="--c:#FFC83D;--fs:22px;width:62px;height:62px;right:60px;top:40px">4</div>
+</section>
+
+<!-- Game modes -->
+<section class="card" id="game-modes">
+  <div class="left" style="width:520px">
+    <div class="logo"><span style="--c:#FF8FA8">p</span><span style="--c:#FFC83D">l</span><span style="--c:#7BE38A">o</span><span style="--c:#63C7FF">p</span><span style="--c:#A98BFF">j</span><span style="--c:#FF9A5C">a</span><span style="--c:#FF5D73">r</span></div>
+    <div class="kicker">Game modes</div>
+    <h1 style="font-size:70px">6 modes.<br>24 puzzle jars.</h1>
+    <div class="sub">Classic, Slim, Threes, Sprint, Zen, Chaos and a new Daily jar every day.</div>
+  </div>
+  <div class="phone" style="left:610px;top:96px;width:200px;transform:rotate(-7deg)"><img src="../../img/slim.webp" alt=""></div>
+  <div class="phone" style="left:930px;top:96px;width:200px;transform:rotate(7deg)"><img src="../../img/threes.webp" alt=""></div>
+  <div class="phone" style="left:766px;top:58px;width:220px;z-index:2"><img src="../../img/play.webp" alt=""></div>
+  <div class="label" style="left:600px;top:540px;transform:rotate(-7deg)">Slim</div>
+  <div class="label" style="left:766px;top:532px;z-index:3">Classic</div>
+  <div class="label" style="left:920px;top:540px;transform:rotate(7deg)">Threes</div>
+</section>
+
+<!-- FAQ -->
+<section class="card" id="faq">
+  <div class="left">
+    <div class="logo"><span style="--c:#FF8FA8">p</span><span style="--c:#FFC83D">l</span><span style="--c:#7BE38A">o</span><span style="--c:#63C7FF">p</span><span style="--c:#A98BFF">j</span><span style="--c:#FF9A5C">a</span><span style="--c:#FF5D73">r</span></div>
+    <div class="kicker">Questions, answered</div>
+    <h1>Plopjar FAQ</h1>
+    <div class="chips">
+      <span class="chip" style="--c:var(--yolk)">Free</span>
+      <span class="chip" style="--c:var(--mint)">Works offline</span>
+      <span class="chip" style="--c:var(--cherry)">No ads</span>
+      <span class="chip" style="--c:var(--sky)">Any device</span>
+      <span class="chip" style="--c:var(--grape)">No sign-up</span>
+    </div>
+  </div>
+  <div class="phone" style="right:110px;top:52px;width:300px;transform:rotate(-4deg)"><img src="../../img/menu.webp" alt=""></div>
+  <div class="blob" style="--c:#63C7FF;--fs:56px;width:130px;height:130px;right:40px;top:400px">?</div>
+  <div class="blob" style="--c:#FF8FA8;--fs:24px;width:70px;height:70px;right:420px;top:60px">2</div>
+</section>
+
+<div class="url" id="url">Play free at <b>plopjar.viztf.lol</b></div>
+<script>
+const id = new URLSearchParams(location.search).get('card') || 'how-to-play';
+document.getElementById(id).classList.add('on');
+</script>
+</body>
+</html>

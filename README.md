@@ -12,15 +12,19 @@ python3 -m http.server 8000
 
 The service worker (offline mode) only registers when the site is served over HTTPS.
 
-## Before deploying
+## Pages and SEO
 
-The canonical link, Open Graph tags, JSON-LD, `robots.txt` and `sitemap.xml` need the site's absolute address. They hold the placeholder `SITE_URL` until you set it once:
+- `index.html` is the game. `how-to-play/`, `game-modes/` and `faq/` are static guide pages that share `site.css`. They exist so search engines and AI assistants have real text to index and quote.
+- `faq/index.html` is generated. Edit the questions in `tools/faq.mjs`, then run `node tools/faq.mjs`. That keeps the visible answers and the FAQPage structured data in sync.
+- Open Graph cards live in `og/`. Edit `tools/og/og.html`, then run `npx -y -p playwright node tools/og/render.mjs`. `og-image.png` is the homepage card.
+- `llms.txt` is a plain-text summary for AI assistants. `robots.txt` allows every crawler. `vercel.json` sets trailing slashes and cache headers.
+- The site address `https://plopjar.viztf.lol` is written into canonical links, Open Graph tags, JSON-LD, `robots.txt`, `sitemap.xml` and `llms.txt`.
 
-```sh
-./set-domain.sh https://your.domain
-```
+## When you ship an update
 
-When you ship an update, bump `CACHE` in `sw.js` so installed copies refresh, and update `<lastmod>` in `sitemap.xml`.
+- Bump `CACHE` in `sw.js` so installed copies refresh.
+- Update `<lastmod>` in `sitemap.xml`, plus the "Updated" dates and `dateModified` on any guide page you changed.
+- If you change rules, modes or levels in the game, update the guide pages and `llms.txt` to match.
 
 ## Privacy
 

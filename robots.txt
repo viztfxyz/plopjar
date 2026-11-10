@@ -1,4 +1,7 @@
+# Plopjar welcomes search engines and AI assistants (Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User,
+# PerplexityBot, Claude-SearchBot and others). One wildcard group on purpose: named groups would replace it.
 User-agent: *
 Allow: /
+Disallow: /tools/
 
 Sitemap: https://plopjar.viztf.lol/sitemap.xml
