@@ -568,10 +568,18 @@ const FONT = 'Figtree,ui-rounded,system-ui,sans-serif', FD = '"Bagel Fat One",ui
 const CREAM = '#FFF1DC', MUTE = '#B8A8D8', YOLK = '#FFC83D', SKY = '#63C7FF', GRAPE = '#A98BFF', CHERRY = '#FF5D73', MINT = '#5FE3C0', WELL = '#33264F';
 const CANDY = [YOLK, SKY, GRAPE, CHERRY, MINT];
 let scale = 1, dpr = 1;
+const SAFE = document.getElementById('safe');
+const IOS = /iP(hone|od|ad)/.test(navigator.platform) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent));
 function resize() {
   dpr = Math.min(2.5, window.devicePixelRatio || 1);
   // keep everything clear of the notch / Dynamic Island / home bar on full-screen phones
-  const sa = getComputedStyle(document.getElementById('safe')), sat = parseFloat(sa.paddingTop) || 0, sab = parseFloat(sa.paddingBottom) || 0;
+  const sa = getComputedStyle(SAFE), sab = parseFloat(sa.paddingBottom) || 0;
+  let sat = parseFloat(sa.paddingTop) || 0;
+  // iOS sometimes reports a 0 top inset even though the page is drawn under the status bar
+  // (home-screen app on launch, iOS 26 Safari's edge-to-edge mode). If the page fills the whole
+  // screen in portrait and no inset came through, reserve the status bar height ourselves.
+  if (IOS && sat < 20 && innerHeight > innerWidth && innerHeight >= screen.height - 2)
+    sat = screen.height >= 852 ? 59 : screen.height >= 812 ? 47 : 20;
   const availH = Math.max(300, innerHeight - sat - sab);
   H = Math.round(Math.min(1040, Math.max(780, W * availH / innerWidth)));
   scale = Math.min(innerWidth / W, availH / H);
@@ -587,6 +595,13 @@ function resize() {
   rs.setProperty('--side', side + 'px'); rs.setProperty('--rw', Math.min(300, side - 56) + 'px');
 }
 addEventListener('resize', resize); resize();
+// env(safe-area-inset-*) can settle after startup without a resize event (iOS standalone launch,
+// Safari toolbar changes, rotation). #safe's padding box tracks the insets, so watch it directly.
+if (window.ResizeObserver) new ResizeObserver(resize).observe(SAFE, { box: 'border-box' });
+addEventListener('orientationchange', () => setTimeout(resize, 120));
+addEventListener('pageshow', resize);
+addEventListener('load', resize);
+if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 
 // ---------- persistence ----------
 const store = {
