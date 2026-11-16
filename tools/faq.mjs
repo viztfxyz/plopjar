@@ -12,7 +12,7 @@ const GROUPS = [
     ['Is Plopjar free to play?',
       `<p>Yes. Plopjar is completely free. There are no ads, no in-app purchases, no premium version and no account to create. Every mode, level and theme is available to everyone.</p>`],
     ['Who made Plopjar?',
-      `<p>Plopjar was designed and built by <a href="https://viztf.lol">Viz</a>, a freelance web designer and developer. It is a single-page web game with self-hosted fonts and no third-party code.</p>`],
+      `<p>Plopjar was designed and built by <a href="https://viztf.lol" rel="me">Viz</a>, a freelance web designer and developer. It is a single-page web game with self-hosted fonts and no third-party code.</p>`],
     ['Is Plopjar like 2048?',
       `<p>It shares the core idea of 2048: matching numbers merge and double. The difference is physics. Instead of sliding tiles on a grid, you throw squishy blobs into a jar where they roll, bounce and stack. Plopjar also adds combos, power-ups, rainbow wildcards, six modes, a daily jar and 24 puzzle levels.</p>`],
     ['Is Plopjar safe for kids?',
@@ -134,7 +134,7 @@ ${JSON.stringify(ld)}
   <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Plopjar</a></li><li aria-current="page">FAQ</li></ol></nav>
   <h1>Plopjar FAQ</h1>
   <p class="lede">Plopjar is a free number merge game you play in your browser. It has no ads and no sign-up, works offline, and runs on phones, tablets and computers. Here are answers to the questions players ask most.</p>
-  <p class="meta">By <a href="https://viztf.lol">Viz</a>, the game’s maker · Updated <time datetime="${UPDATED}">${UPDATED_TEXT}</time> · ${all.length} questions</p>
+  <p class="meta">By <a href="https://viztf.lol" rel="me">Viz</a>, the game’s maker · Updated <time datetime="${UPDATED}">${UPDATED_TEXT}</time> · ${all.length} questions</p>
 ${body}
 
   <section class="band">
@@ -151,7 +151,7 @@ ${body}
 
 <footer>
   <nav aria-label="Footer"><a href="/">Play Plopjar</a><a href="/how-to-play/">How to play</a><a href="/game-modes/">Game modes</a><a href="/faq/">FAQ</a></nav>
-  <p>Plopjar is a free browser game made by <a href="https://viztf.lol">Viz</a>. No ads, no accounts, no tracking.</p>
+  <p>Plopjar is a free browser game made by <a href="https://viztf.lol" rel="me">Viz</a>. No ads, no accounts, no tracking.</p>
 </footer>
 </body>
 </html>

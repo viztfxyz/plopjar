@@ -32,4 +32,6 @@ No analytics, no ads, no accounts, no third-party requests. Fonts are self-hoste
 
 ## Credits
 
+Made by [Viz](https://viztf.lol).
+
 Fonts: [Bagel Fat One](https://fonts.google.com/specimen/Bagel+Fat+One) and [Figtree](https://fonts.google.com/specimen/Figtree), both under the SIL Open Font License (license texts in `fonts/`).
